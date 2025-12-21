@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Clock Ultra</title>
+    <!-- 引入多种复古/像素字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Default: Share Tech Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Option 2: VT323 (Terminal Style) -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <!-- Option 3: DotGothic16 (Pixel/Dot Matrix Style) -->
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* 默认主题：琥珀色 (Amber) */
+            --bg-body: #111111;
+            --bg-case: #0a0a0a;
+            --text-base: #ffaa00; /* 基准色 */
+            
+            /* 衍生颜色 */
+            --text-dim: rgba(255, 170, 0, 0.25);
+            --text-active: #ffaa00;
+            --text-glow: rgba(255, 170, 0, 0.6);
+            --bracket-color: #ffaa00;
+            --week-color: #ffcc00; /* 星期显示的特殊色 */
+            
+            --cell-size: 36px;
+            --gap-size: 8px;
+            
+            /* 字体变量 - 增加中文回退支持 */
+            --font-tech: 'Share Tech Mono', 'Microsoft YaHei', 'PingFang SC', monospace;
+            --font-terminal: 'VT323', 'Microsoft YaHei', 'PingFang SC', monospace;
+            --font-pixel: 'DotGothic16', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            
+            --font-main: var(--font-tech); /* 当前字体 */
+        }
+
+        /* --- 主题定义 --- */
+        [data-theme="green"] {
+            --text-base: #00ff41;
+            --text-dim: rgba(0, 255, 65, 0.2);
+            --text-active: #00ff41;
+            --text-glow: rgba(0, 255, 65, 0.6);
+            --bracket-color: #00ff41;
+            --week-color: #ccff00;
+        }
+        [data-theme="blue"] {
+            --text-base: #00f3ff;
+            --text-dim: rgba(0, 243, 255, 0.2);
+            --text-active: #00f3ff;
+            --text-glow: rgba(0, 243, 255, 0.6);
+            --bracket-color: #00f3ff;
+            --week-color: #00bfff;
+        }
+        [data-theme="red"] {
+            --text-base: #ff003c;
+            --text-dim: rgba(255, 0, 60, 0.2);
+            --text-active: #ff003c;
+            --text-glow: rgba(255, 0, 60, 0.6);
+            --bracket-color: #ff003c;
+            --week-color: #ff4444;
+        }
+        [data-theme="white"] {
+            --text-base: #e0e0e0;
+            --text-dim: rgba(255, 255, 255, 0.2);
+            --text-active: #ffffff;
+            --text-glow: rgba(255, 255, 255, 0.5);
+            --bracket-color: #ffffff;
+            --week-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
+            color: var(--text-active);
+            font-family: var(--font-main);
+            overflow: hidden;
+            transition: color 0.3s;
+        }
+
+        /* 手表外壳 */
+        .clock-container {
+            position: relative;
+            padding: 40px 30px 30px 30px; 
+            background: var(--bg-case);
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.9),
+                0 0 0 2px #333,
+                inset 0 0 30px rgba(0,0,0,0.8);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .screen-glass {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 40%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* --- 顶部信息区 (日期/星期) --- */
+        .info-hud {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            color: var(--text-active);
+            text-shadow: 0 0 5px var(--text-glow);
+            opacity: 0.9;
+            margin-bottom: 5px;
+            min-height: 1.2em; 
+            z-index: 5;
+            padding: 0 4px; /* 对齐网格 */
+            letter-spacing: 0.5px;
+        }
+        
+        .info-date, .info-week {
+            transition: opacity 0.3s;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+
+        /* 数字矩阵网格 */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--gap-size);
+            position: relative;
+            z-index: 1;
+        }
+
+        .digit-cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem;
+            color: var(--text-dim);
+            position: relative;
+            transition: color 0.1s ease, text-shadow 0.1s ease, transform 0.2s;
+        }
+
+        /* 状态样式 */
+        .is-minute {
+            color: var(--text-active);
+            font-weight: bold;
+            text-shadow: 0 0 10px var(--text-glow), 0 0 20px var(--text-glow);
+            transform: scale(1.1);
+            z-index: 2;
+        }
+
+        .is-hour {
+            color: var(--text-active);
+            text-shadow: 0 0 5px var(--text-glow);
+            z-index: 2;
+        }
+
+        .is-hour::before, .is-hour::after {
+            position: absolute;
+            color: var(--bracket-color);
+            opacity: 0.8;
+            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+        .is-hour::before { content: '['; left: -6px; }
+        .is-hour::after { content: ']'; right: -6px; }
+
+        /* 秒针 - 下划线 */
+        .digit-cell .underline {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0%;
+            height: 2px;
+            background-color: var(--text-active);
+            box-shadow: 0 0 5px var(--text-active);
+            opacity: 0;
+            transition: width 0.1s ease, opacity 0.1s ease;
+        }
+        .is-second .underline { width: 80%; opacity: 1; }
+
+        /* 星期 - 上划线 (Matrix模式) */
+        .digit-cell .overline {
+            position: absolute;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0%;
+            height: 2px;
+            background-color: var(--week-color); /* 稍微不同的颜色 */
+            box-shadow: 0 0 5px var(--week-color);
+            opacity: 0;
+            transition: width 0.3s ease, opacity 0.3s ease;
+        }
+
+        .is-week-matrix .overline {
+            width: 80%;
+            opacity: 1;
+        }
+        
+        /* 当星期选中时，数字本体也稍微变色 */
+        .is-week-matrix {
+            color: var(--week-color) !important;
+            text-shadow: 0 0 8px var(--week-color);
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* --- 设置面板 --- */
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #444;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            transition: color 0.3s, transform 0.3s;
+        }
+        .settings-btn:hover {
+            color: #888;
+            transform: rotate(90deg);
+        }
+
+        .settings-panel {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 101;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 250px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .settings-panel.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 12px;
+        }
+        .setting-group:last-child { border-bottom: none; }
+
+        .setting-label {
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: #333;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: none;
+            transition: background 0.3s;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        .toggle-switch:checked { background: var(--text-active); }
+        .toggle-switch:checked::after { transform: translateX(20px); }
+
+        /* Font & Lang Buttons */
+        .font-selector {
+            display: flex;
+            gap: 5px;
+        }
+        .font-btn {
+            background: #222;
+            border: 1px solid #444;
+            color: #888;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+            flex: 1;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .font-btn:hover { background: #333; color: #fff; }
+        .font-btn.active {
+            background: var(--text-active);
+            color: #000;
+            border-color: var(--text-active);
+            font-weight: bold;
+        }
+
+        /* Mode Selector (Week) */
+        .mode-selector {
+            display: flex;
+            background: #222;
+            border-radius: 4px;
+            padding: 2px;
+        }
+        .mode-option {
+            flex: 1;
+            text-align: center;
+            padding: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: #666;
+            border-radius: 2px;
+            transition: 0.2s;
+        }
+        .mode-option.active {
+            background: #444;
+            color: #fff;
+        }
+
+        /* Color Dots */
+        .color-options { display: flex; gap: 10px; }
+        .color-dot {
+            width: 20px; height: 20px; border-radius: 50%; cursor: pointer;
+            border: 2px solid transparent; transition: transform 0.2s;
+        }
+        .color-dot:hover { transform: scale(1.2); }
+        .color-dot.active { border-color: #fff; }
+        
+        .c-amber { background: #ffaa00; }
+        .c-green { background: #00ff41; }
+        .c-blue  { background: #00f3ff; }
+        .c-red   { background: #ff003c; }
+        .c-white { background: #e0e0e0; }
+
+        @media (max-width: 480px) {
+            :root { --cell-size: 28px; --gap-size: 6px; }
+            .clock-container { padding: 30px 20px; }
+            .settings-panel { right: 50%; transform: translateX(50%) translateY(-10px); top: 10%; }
+            .settings-panel.open { transform: translateX(50%) translateY(0); }
+        }
+        @media (max-width: 350px) {
+            :root { --cell-size: 24px; --gap-size: 4px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙</div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <!-- Display Toggles -->
+        <div class="setting-group">
+            <div class="setting-label">Display</div>
+            <div class="setting-row">
+                <span>Date (Top)</span>
+                <input type="checkbox" class="toggle-switch" id="toggleDate" checked onchange="toggleDisplay('date')">
+            </div>
+        </div>
+        
+        <!-- Language -->
+        <div class="setting-group">
+            <div class="setting-label">Language</div>
+            <div class="font-selector">
+                <div class="font-btn active" onclick="setLang('en', this)">English</div>
+                <div class="font-btn" onclick="setLang('zh', this)">中文</div>
+            </div>
+        </div>
+
+        <!-- Weekday Mode -->
+        <div class="setting-group">
+            <div class="setting-label">Week Mode</div>
+            <div class="mode-selector">
+                <div class="mode-option" id="weekMode-off" onclick="setWeekMode('off')">Off</div>
+                <div class="mode-option active" id="weekMode-text" onclick="setWeekMode('text')">Text</div>
+                <div class="mode-option" id="weekMode-matrix" onclick="setWeekMode('matrix')">Matrix</div>
+            </div>
+            <div style="font-size: 0.7rem; color: #666; margin-top: 4px;">Matrix: Mon=01 ... Sun=07</div>
+        </div>
+
+        <!-- Font Style -->
+        <div class="setting-group">
+            <div class="setting-label">Typography</div>
+            <div class="font-selector">
+                <div class="font-btn active" onclick="setFont('tech', this)">Tech</div>
+                <div class="font-btn" onclick="setFont('terminal', this)">DOS</div>
+                <div class="font-btn" onclick="setFont('pixel', this)">Pixel</div>
+            </div>
+        </div>
+
+        <!-- Theme Color -->
+        <div class="setting-group">
+            <div class="setting-label">Theme</div>
+            <div class="color-options">
+                <div class="color-dot c-amber active" onclick="setTheme('amber', this)"></div>
+                <div class="color-dot c-green" onclick="setTheme('green', this)"></div>
+                <div class="color-dot c-blue" onclick="setTheme('blue', this)"></div>
+                <div class="color-dot c-red" onclick="setTheme('red', this)"></div>
+                <div class="color-dot c-white" onclick="setTheme('white', this)"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="clock-container">
+        <div class="screen-glass"></div>
+
+        <!-- HUD: 只有在 Text 模式下显示 -->
+        <div class="info-hud" id="hud">
+            <div class="info-date" id="dateDisplay">--.--.--</div>
+            <div class="info-week" id="weekDisplay">---</div>
+        </div>
+
+        <div class="matrix-grid" id="grid">
+            <!-- JS Generated -->
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const weekDisplay = document.getElementById('weekDisplay');
+        const hud = document.getElementById('hud');
+        
+        let currentWeekMode = 'text'; // 'off', 'text', 'matrix'
+        let currentLang = 'en'; // 'en', 'zh'
+
+        // 1. 初始化
+        function initClock() {
+            grid.innerHTML = '';
+            for (let i = 0; i < 60; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'digit-cell';
+                cell.id = `num-${i}`;
+                const text = i.toString().padStart(2, '0');
+                // 结构: 数字 + 下划线(秒) + 上划线(周)
+                cell.innerHTML = `
+                    ${text}
+                    <span class="underline"></span>
+                    <span class="overline"></span>
+                `;
+                grid.appendChild(cell);
+            }
+        }
+
+        // 2. 核心更新逻辑
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const day = now.getDay(); // 0(Sun) - 6(Sat)
+
+            // --- 顶部 HUD 更新 ---
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const dateNum = now.getDate().toString().padStart(2, '0');
+            
+            // 日期显示：增加年份 YYYY.MM.DD
+            dateDisplay.textContent = `${year}.${month}.${dateNum}`;
+
+            // 星期显示：中英文切换
+            const daysTextEn = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            const daysTextZh = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            
+            weekDisplay.textContent = currentLang === 'en' ? daysTextEn[day] : daysTextZh[day];
+
+            // --- 清除所有 Grid 样式 ---
+            document.querySelectorAll('.digit-cell').forEach(cell => {
+                cell.classList.remove('is-hour', 'is-minute', 'is-second', 'is-week-matrix');
+            });
+
+            // --- 应用 Grid 样式 ---
+            
+            // Hour
+            const hourCell = document.getElementById(`num-${hours}`);
+            if (hourCell) hourCell.classList.add('is-hour');
+
+            // Minute
+            const minCell = document.getElementById(`num-${minutes}`);
+            if (minCell) minCell.classList.add('is-minute');
+
+            // Second
+            const secCell = document.getElementById(`num-${seconds}`);
+            if (secCell) secCell.classList.add('is-second');
+
+            // Week Matrix Logic
+            if (currentWeekMode === 'matrix') {
+                let matrixDay = day; 
+                if (matrixDay === 0) matrixDay = 7; // Convert Sunday 0 to 7
+                const weekCell = document.getElementById(`num-${matrixDay}`);
+                if (weekCell) {
+                    weekCell.classList.add('is-week-matrix');
+                }
+            }
+        }
+
+        // 3. 设置逻辑
+
+        function toggleSettings() {
+            settingsPanel.classList.toggle('open');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!settingsPanel.contains(e.target) && e.target.id !== 'settingsBtn') {
+                settingsPanel.classList.remove('open');
+            }
+        });
+
+        function toggleDisplay(type) {
+            if (type === 'date') {
+                const isChecked = document.getElementById('toggleDate').checked;
+                dateDisplay.style.visibility = isChecked ? 'visible' : 'hidden';
+            }
+        }
+
+        function setWeekMode(mode) {
+            currentWeekMode = mode;
+            document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('active'));
+            document.getElementById(`weekMode-${mode}`).classList.add('active');
+            weekDisplay.style.display = (mode === 'text') ? 'block' : 'none';
+            updateTime();
+        }
+
+        function setFont(fontType, btnElement) {
+            const root = document.documentElement;
+            if (fontType === 'tech') root.style.setProperty('--font-main', 'var(--font-tech)');
+            if (fontType === 'terminal') root.style.setProperty('--font-main', 'var(--font-terminal)');
+            if (fontType === 'pixel') root.style.setProperty('--font-main', 'var(--font-pixel)');
+
+            // 仅更新字体按钮组的激活状态
+            btnElement.parentElement.querySelectorAll('.font-btn').forEach(el => el.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
+        // 设置语言
+        function setLang(lang, btnElement) {
+            currentLang = lang;
+            // 更新按钮样式
+            btnElement.parentElement.querySelectorAll('.font-btn').forEach(el => el.classList.remove('active'));
+            btnElement.classList.add('active');
+            updateTime(); // 立即刷新显示
+        }
+
+        function setTheme(themeName, element) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            document.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Start
+        initClock();
+        updateTime();
+        setInterval(updateTime, 1000);
+
+    </script>
+</body>
+</html>
