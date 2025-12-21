@@ -459,6 +459,18 @@
                 <div class="color-dot c-white" onclick="setTheme('white', this)"></div>
             </div>
         </div>
+
+        <!-- Debug Mode -->
+        <div class="setting-group">
+            <div class="setting-label">Debug / Time Travel</div>
+            <div class="setting-row">
+                <span>Speed (x)</span>
+                <input type="number" id="speedInput" value="1" min="0" step="10" style="width: 60px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; padding: 2px 4px;">
+            </div>
+            <div class="setting-row" style="margin-top: 8px;">
+                <button id="resetTimeBtn" style="width: 100%; background: #333; color: #ccc; border: 1px solid #444; padding: 4px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Reset to Real Time</button>
+            </div>
+        </div>
     </div>
 
     <div class="clock-container">
@@ -485,6 +497,24 @@
         let currentWeekMode = 'text'; // 'off', 'text', 'matrix'
         let currentLang = 'en'; // 'en', 'zh'
 
+        const speedInput = document.getElementById('speedInput');
+        const resetTimeBtn = document.getElementById('resetTimeBtn');
+        
+        // Debug variables
+        let speedMultiplier = 1;
+        let simulatedTime = new Date();
+        let lastFrameTime = performance.now();
+        
+        speedInput.addEventListener('change', (e) => {
+            speedMultiplier = parseFloat(e.target.value) || 1;
+        });
+        
+        resetTimeBtn.addEventListener('click', () => {
+            simulatedTime = new Date();
+            speedMultiplier = 1;
+            speedInput.value = 1;
+        });
+
         // 1. 初始化
         function initClock() {
             grid.innerHTML = '';
@@ -505,16 +535,27 @@
 
         // 2. 核心更新逻辑
         function updateTime() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            const day = now.getDay(); // 0(Sun) - 6(Sat)
+            // Calculate time mapping
+            const now = performance.now();
+            const deltaTime = now - lastFrameTime;
+            lastFrameTime = now;
+            
+            // Add scaled time
+            // deltaTime is in ms
+            const addedTime = deltaTime * speedMultiplier;
+            simulatedTime = new Date(simulatedTime.getTime() + addedTime);
+            
+            const displayTime = simulatedTime;
+
+            const hours = displayTime.getHours();
+            const minutes = displayTime.getMinutes();
+            const seconds = displayTime.getSeconds();
+            const day = displayTime.getDay(); // 0(Sun) - 6(Sat)
 
             // --- 顶部 HUD 更新 ---
-            const year = now.getFullYear();
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            const dateNum = now.getDate().toString().padStart(2, '0');
+            const year = displayTime.getFullYear();
+            const month = (displayTime.getMonth() + 1).toString().padStart(2, '0');
+            const dateNum = displayTime.getDate().toString().padStart(2, '0');
             
             // 日期显示：增加年份 YYYY.MM.DD
             dateDisplay.textContent = `${year}.${month}.${dateNum}`;
@@ -552,7 +593,12 @@
                 if (weekCell) {
                     weekCell.classList.add('is-week-matrix');
                 }
+                
+                // Fix: Also highlight the day number even if it overlaps with time
+                // (Already handled by classList.add, they stack)
             }
+            
+            requestAnimationFrame(updateTime);
         }
 
         // 3. 设置逻辑
@@ -579,7 +625,7 @@
             document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('active'));
             document.getElementById(`weekMode-${mode}`).classList.add('active');
             weekDisplay.style.display = (mode === 'text') ? 'block' : 'none';
-            updateTime();
+            // Update immediately not needed as loop runs
         }
 
         function setFont(fontType, btnElement) {
@@ -599,7 +645,7 @@
             // 更新按钮样式
             btnElement.parentElement.querySelectorAll('.font-btn').forEach(el => el.classList.remove('active'));
             btnElement.classList.add('active');
-            updateTime(); // 立即刷新显示
+            // Loop handles update
         }
 
         function setTheme(themeName, element) {
@@ -610,8 +656,7 @@
 
         // Start
         initClock();
-        updateTime();
-        setInterval(updateTime, 1000);
+        requestAnimationFrame(updateTime);
 
     </script>
 </body>
