@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Matrix Watch</title>
+    <style>
+        :root {
+            --watch-size: min(92vmin, 760px);
+            --cream: #f7f7f4;
+            --white-dot: #fbfbf2;
+            --orange: #ff6a00;
+            --red: #ff2d2b;
+            --case-black: #050606;
+            --inner-black: #0b0d0d;
+            --screen-gray: #2f3230;
+            --hole: #050606;
+            --hole-hi: #181a19;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 50% 42%, #ffffff 0 34%, #ececeb 72%, #dededd 100%);
+            color: var(--cream);
+            font-family: "Arial Narrow", "DIN Condensed", "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .watch {
+            position: relative;
+            width: var(--watch-size);
+            aspect-ratio: 1;
+            border-radius: 17.5%;
+            background:
+                linear-gradient(145deg, #222 0%, #050505 16%, #050606 70%, #1b1c1b 100%);
+            box-shadow:
+                0 18px 34px rgba(0, 0, 0, 0.33),
+                inset 0 0 0 calc(var(--watch-size) * 0.008) #2c2d2d,
+                inset 0 0 0 calc(var(--watch-size) * 0.02) #070808,
+                inset 0 0 calc(var(--watch-size) * 0.045) rgba(255, 255, 255, 0.08);
+            padding: calc(var(--watch-size) * 0.072);
+        }
+
+        .watch::before,
+        .watch::after {
+            content: "";
+            position: absolute;
+            inset: calc(var(--watch-size) * 0.025);
+            border-radius: 15.2%;
+            pointer-events: none;
+        }
+
+        .watch::before {
+            border: calc(var(--watch-size) * 0.002) solid rgba(255, 255, 255, 0.18);
+            box-shadow:
+                inset 0 0 0 calc(var(--watch-size) * 0.004) rgba(0, 0, 0, 0.92),
+                0 0 0 calc(var(--watch-size) * 0.006) rgba(0, 0, 0, 0.55);
+        }
+
+        .watch::after {
+            inset: calc(var(--watch-size) * 0.048);
+            border: calc(var(--watch-size) * 0.002) solid rgba(255, 255, 255, 0.09);
+        }
+
+        .face {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 13.2%;
+            background: #111313;
+            box-shadow:
+                inset 0 calc(var(--watch-size) * 0.025) calc(var(--watch-size) * 0.065) rgba(0, 0, 0, 0.82),
+                inset 0 calc(var(--watch-size) * -0.02) calc(var(--watch-size) * 0.05) rgba(255, 255, 255, 0.04);
+        }
+
+        .top-panel {
+            position: relative;
+            height: 53.6%;
+            padding:
+                calc(var(--watch-size) * 0.095)
+                calc(var(--watch-size) * 0.052)
+                calc(var(--watch-size) * 0.038);
+            background:
+                radial-gradient(circle at center, var(--hole) 0 43%, transparent 44%) 0 0 / calc(var(--watch-size) * 0.0172) calc(var(--watch-size) * 0.0172),
+                radial-gradient(circle at center, var(--hole-hi) 0 49%, transparent 50%) calc(var(--watch-size) * 0.002) calc(var(--watch-size) * 0.002) / calc(var(--watch-size) * 0.0172) calc(var(--watch-size) * 0.0172),
+                linear-gradient(180deg, #333735 0%, #292d2a 52%, #242724 100%);
+        }
+
+        .top-panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: calc(var(--watch-size) * 0.095);
+            background: var(--case-black);
+            border-bottom-left-radius: 16%;
+            border-bottom-right-radius: 16%;
+            box-shadow: 0 calc(var(--watch-size) * 0.01) calc(var(--watch-size) * 0.035) rgba(0, 0, 0, 0.55);
+        }
+
+        .red-dot {
+            position: absolute;
+            top: calc(var(--watch-size) * 0.095);
+            left: 58.2%;
+            width: calc(var(--watch-size) * 0.027);
+            height: calc(var(--watch-size) * 0.027);
+            border-radius: 50%;
+            background: var(--red);
+            box-shadow: 0 0 calc(var(--watch-size) * 0.012) rgba(255, 45, 43, 0.72);
+            z-index: 2;
+        }
+
+        .top-meta {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: auto auto;
+            justify-content: space-between;
+            align-items: start;
+            padding: 0 calc(var(--watch-size) * 0.01);
+        }
+
+        .time-line {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: auto auto;
+            align-items: end;
+            justify-content: space-between;
+            margin-top: calc(var(--watch-size) * 0.045);
+        }
+
+        .time-wrap {
+            display: flex;
+            align-items: flex-end;
+            gap: calc(var(--watch-size) * 0.014);
+        }
+
+        .dot-matrix {
+            --dot-size: calc(var(--watch-size) * 0.0086);
+            --dot-gap: calc(var(--watch-size) * 0.0039);
+            --char-gap: calc(var(--watch-size) * 0.010);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--char-gap);
+            line-height: 0;
+            filter:
+                drop-shadow(0 0 calc(var(--watch-size) * 0.0045) rgba(255, 255, 245, 0.72))
+                drop-shadow(0 0 calc(var(--watch-size) * 0.012) rgba(255, 255, 245, 0.22));
+        }
+
+        .dot-char {
+            display: grid;
+            grid-template-columns: repeat(var(--cols), var(--dot-size));
+            grid-auto-rows: var(--dot-size);
+            gap: var(--dot-gap);
+        }
+
+        .dot-pixel {
+            width: var(--dot-size);
+            height: var(--dot-size);
+            border-radius: 50%;
+            background: transparent;
+        }
+
+        .dot-pixel.is-on {
+            background: var(--white-dot);
+            box-shadow:
+                inset 0 calc(var(--watch-size) * -0.001) 0 rgba(0, 0, 0, 0.18),
+                0 0 calc(var(--watch-size) * 0.005) rgba(255, 255, 245, 0.72);
+        }
+
+        .meta-dots {
+            --dot-size: calc(var(--watch-size) * 0.0088);
+            --dot-gap: calc(var(--watch-size) * 0.004);
+            --char-gap: calc(var(--watch-size) * 0.0105);
+        }
+
+        .main-dots {
+            --dot-size: calc(var(--watch-size) * 0.0102);
+            --dot-gap: calc(var(--watch-size) * 0.0042);
+            --char-gap: calc(var(--watch-size) * 0.011);
+        }
+
+        .second-dots {
+            --dot-size: calc(var(--watch-size) * 0.0077);
+            --dot-gap: calc(var(--watch-size) * 0.0034);
+            --char-gap: calc(var(--watch-size) * 0.0075);
+            align-self: end;
+            margin-bottom: calc(var(--watch-size) * 0.012);
+        }
+
+        .info-band {
+            height: 25.1%;
+            margin: 0 calc(var(--watch-size) * 0.013);
+            display: grid;
+            grid-template-columns: 0.9fr 1.78fr 1fr;
+            align-items: stretch;
+            gap: calc(var(--watch-size) * 0.022);
+            padding:
+                calc(var(--watch-size) * 0.043)
+                calc(var(--watch-size) * 0.034)
+                calc(var(--watch-size) * 0.02);
+            border-radius: calc(var(--watch-size) * 0.024);
+            background:
+                radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.06), transparent 26%),
+                #080909;
+            box-shadow:
+                inset 0 0 calc(var(--watch-size) * 0.02) rgba(255, 255, 255, 0.035),
+                0 calc(var(--watch-size) * -0.002) 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .date-card {
+            color: #fafaf4;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-weight: 600;
+            font-size: calc(var(--watch-size) * 0.04);
+            line-height: 1.28;
+            letter-spacing: calc(var(--watch-size) * 0.001);
+            white-space: nowrap;
+        }
+
+        .gauge {
+            position: relative;
+            height: 100%;
+            min-width: 0;
+        }
+
+        .tick {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: calc(var(--watch-size) * 0.006);
+            height: calc(var(--watch-size) * 0.028);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.93);
+            transform-origin: 50% calc(var(--watch-size) * 0.145);
+            transform: translate(-50%, -100%) rotate(var(--a));
+        }
+
+        .gauge-label {
+            position: absolute;
+            color: #fafaf4;
+            font-size: calc(var(--watch-size) * 0.032);
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .gauge-label.zero {
+            left: 8%;
+            bottom: 8%;
+        }
+
+        .gauge-label.thirty {
+            left: 46%;
+            top: 9%;
+        }
+
+        .gauge-label.sixty {
+            right: 8%;
+            bottom: 8%;
+        }
+
+        .needle {
+            position: absolute;
+            left: 50%;
+            bottom: 14%;
+            width: calc(var(--watch-size) * 0.016);
+            height: calc(var(--watch-size) * 0.106);
+            border-radius: 999px 999px 20% 20%;
+            background: linear-gradient(90deg, #ff2b2d 0 55%, #c61616 56% 100%);
+            transform-origin: 50% 88%;
+            transform: translateX(-50%) rotate(var(--needle-angle, -28deg));
+            box-shadow: 0 0 calc(var(--watch-size) * 0.006) rgba(255, 45, 43, 0.45);
+        }
+
+        .battery {
+            display: grid;
+            justify-items: end;
+            align-content: center;
+            row-gap: calc(var(--watch-size) * 0.026);
+            color: #fafaf4;
+        }
+
+        .bars {
+            display: flex;
+            gap: calc(var(--watch-size) * 0.006);
+            height: calc(var(--watch-size) * 0.023);
+            align-items: center;
+        }
+
+        .bar {
+            width: calc(var(--watch-size) * 0.0105);
+            height: 100%;
+            border-radius: 999px;
+            background: var(--orange);
+            transform: skewX(-9deg);
+            box-shadow: 0 0 calc(var(--watch-size) * 0.005) rgba(255, 106, 0, 0.38);
+        }
+
+        .battery-value {
+            font-size: calc(var(--watch-size) * 0.052);
+            font-weight: 500;
+            line-height: 0.82;
+            letter-spacing: calc(var(--watch-size) * 0.001);
+        }
+
+        .bolt {
+            width: calc(var(--watch-size) * 0.026);
+            height: calc(var(--watch-size) * 0.039);
+            margin-right: calc(var(--watch-size) * 0.02);
+            background: var(--orange);
+            clip-path: polygon(48% 0, 100% 0, 62% 44%, 100% 44%, 30% 100%, 45% 56%, 0 56%);
+            filter: drop-shadow(0 0 calc(var(--watch-size) * 0.005) rgba(255, 106, 0, 0.65));
+        }
+
+        .bottom-panel {
+            position: relative;
+            height: 21.3%;
+            display: grid;
+            grid-template-columns: 0.92fr 0.92fr 1.88fr;
+            gap: calc(var(--watch-size) * 0.026);
+            padding:
+                calc(var(--watch-size) * 0.023)
+                calc(var(--watch-size) * 0.039)
+                calc(var(--watch-size) * 0.039);
+            background: linear-gradient(180deg, #111313 0%, #080909 100%);
+        }
+
+        .circle {
+            align-self: center;
+            justify-self: center;
+            width: calc(var(--watch-size) * 0.145);
+            aspect-ratio: 1;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            position: relative;
+        }
+
+        .pink {
+            background:
+                radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.55), transparent 42%),
+                #f5d8ee;
+            color: #080808;
+            font-size: calc(var(--watch-size) * 0.043);
+            font-weight: 500;
+        }
+
+        .heart {
+            position: absolute;
+            bottom: 18%;
+            width: calc(var(--watch-size) * 0.026);
+            height: calc(var(--watch-size) * 0.026);
+            background: #636363;
+            transform: rotate(45deg);
+        }
+
+        .heart::before,
+        .heart::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #636363;
+        }
+
+        .heart::before {
+            left: -50%;
+        }
+
+        .heart::after {
+            top: -50%;
+        }
+
+        .orange-circle {
+            background:
+                radial-gradient(circle at 32% 24%, rgba(255, 187, 69, 0.44), transparent 35%),
+                var(--orange);
+        }
+
+        .gear {
+            width: calc(var(--watch-size) * 0.059);
+            height: calc(var(--watch-size) * 0.059);
+            border-radius: 50%;
+            border: calc(var(--watch-size) * 0.008) solid #8d2500;
+            position: relative;
+            box-shadow: 0 0 0 calc(var(--watch-size) * 0.009) #8d2500;
+        }
+
+        .gear::before {
+            content: "";
+            position: absolute;
+            inset: 18%;
+            border-radius: 50%;
+            border: calc(var(--watch-size) * 0.005) solid #8d2500;
+            background: transparent;
+        }
+
+        .gear::after {
+            content: "";
+            position: absolute;
+            inset: -48%;
+            background:
+                conic-gradient(from 0deg, #8d2500 0 8deg, transparent 8deg 22deg, #8d2500 22deg 30deg, transparent 30deg 45deg);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .stat-pill {
+            align-self: center;
+            height: calc(var(--watch-size) * 0.139);
+            border-radius: calc(var(--watch-size) * 0.036);
+            padding-left: calc(var(--watch-size) * 0.047);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            column-gap: calc(var(--watch-size) * 0.028);
+            align-content: center;
+            align-items: center;
+            background:
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 calc(var(--watch-size) * 0.002), transparent calc(var(--watch-size) * 0.002) calc(var(--watch-size) * 0.006)),
+                linear-gradient(180deg, #565856, #464847);
+            color: #f3f3ef;
+            box-shadow:
+                inset 0 calc(var(--watch-size) * 0.003) calc(var(--watch-size) * 0.008) rgba(255, 255, 255, 0.12),
+                inset 0 calc(var(--watch-size) * -0.003) calc(var(--watch-size) * 0.006) rgba(0, 0, 0, 0.45);
+        }
+
+        .icons {
+            display: grid;
+            row-gap: calc(var(--watch-size) * 0.022);
+        }
+
+        .play {
+            width: 0;
+            height: 0;
+            border-top: calc(var(--watch-size) * 0.017) solid transparent;
+            border-bottom: calc(var(--watch-size) * 0.017) solid transparent;
+            border-left: calc(var(--watch-size) * 0.027) solid #f6f6f2;
+            filter: drop-shadow(0 0 calc(var(--watch-size) * 0.003) rgba(255, 255, 255, 0.45));
+        }
+
+        .flame {
+            width: calc(var(--watch-size) * 0.028);
+            height: calc(var(--watch-size) * 0.034);
+            background: #f6f6f2;
+            clip-path: polygon(48% 0, 66% 25%, 83% 39%, 76% 67%, 57% 100%, 31% 98%, 13% 72%, 19% 47%, 38% 29%);
+        }
+
+        .stat-text {
+            display: grid;
+            row-gap: calc(var(--watch-size) * 0.012);
+            font-size: calc(var(--watch-size) * 0.044);
+            font-weight: 400;
+            line-height: 0.88;
+        }
+
+        @media (max-width: 520px) {
+            :root {
+                --watch-size: min(94vw, 430px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="watch" aria-label="Square matrix watch">
+        <section class="face">
+            <div class="top-panel">
+                <div class="red-dot" aria-hidden="true"></div>
+                <div class="top-meta">
+                    <div class="dot-matrix meta-dots" id="dayText"></div>
+                    <div class="dot-matrix meta-dots" id="dateText"></div>
+                </div>
+                <div class="time-line">
+                    <div class="time-wrap">
+                        <div class="dot-matrix main-dots" id="timeText"></div>
+                    </div>
+                    <div class="dot-matrix second-dots" id="secondsText"></div>
+                </div>
+            </div>
+
+            <div class="info-band">
+                <div class="date-card">
+                    <div id="monthZh">四月</div>
+                    <div id="dayZh">初十</div>
+                </div>
+                <div class="gauge" id="gauge">
+                    <div class="gauge-label zero">0</div>
+                    <div class="gauge-label thirty">30</div>
+                    <div class="gauge-label sixty">60</div>
+                    <div class="needle" id="needle"></div>
+                </div>
+                <div class="battery">
+                    <div class="bars" aria-hidden="true"></div>
+                    <div class="battery-value">60%</div>
+                    <div class="bolt" aria-hidden="true"></div>
+                </div>
+            </div>
+
+            <div class="bottom-panel">
+                <div class="circle pink">
+                    <span id="stepMini">81</span>
+                    <span class="heart" aria-hidden="true"></span>
+                </div>
+                <div class="circle orange-circle">
+                    <span class="gear" aria-hidden="true"></span>
+                </div>
+                <div class="stat-pill">
+                    <div class="icons" aria-hidden="true">
+                        <span class="play"></span>
+                        <span class="flame"></span>
+                    </div>
+                    <div class="stat-text" id="statText">
+                        <span>13</span>
+                        <span>2</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function segmentGlyph(active) {
+            const rows = Array.from({ length: 11 }, () => Array(8).fill("0"));
+            const set = (row, col) => {
+                if (rows[row] && rows[row][col] !== undefined) rows[row][col] = "1";
+            };
+            const h = (row) => {
+                for (let r = row; r < row + 2; r++) {
+                    for (let c = 1; c <= 6; c++) set(r, c);
+                }
+            };
+            const v = (col, start, end) => {
+                for (let r = start; r <= end; r++) {
+                    set(r, col);
+                    set(r, col + 1);
+                }
+            };
+
+            if (active.includes("a")) h(0);
+            if (active.includes("g")) h(4);
+            if (active.includes("d")) h(9);
+            if (active.includes("f")) v(0, 1, 4);
+            if (active.includes("b")) v(6, 1, 4);
+            if (active.includes("e")) v(0, 5, 9);
+            if (active.includes("c")) v(6, 5, 9);
+            return rows.map((row) => row.join(""));
+        }
+
+        const thickGlyph = {
+            "0": segmentGlyph("abcfed"),
+            "1": segmentGlyph("bc"),
+            "2": segmentGlyph("abged"),
+            "3": segmentGlyph("abgcd"),
+            "4": segmentGlyph("fgbc"),
+            "5": segmentGlyph("afgcd"),
+            "6": segmentGlyph("afgecd"),
+            "7": segmentGlyph("abc"),
+            "8": segmentGlyph("abcdefg"),
+            "9": segmentGlyph("abfgcd"),
+            ":": ["00", "00", "11", "11", "00", "00", "00", "11", "11", "00", "00"],
+            "-": ["0000", "0000", "0000", "0000", "1111", "1111", "0000", "0000", "0000", "0000", "0000"],
+            " ": ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"]
+        };
+
+        const thinGlyph = {
+            "0": ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+            "1": ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
+            "2": ["11110", "00001", "00001", "01110", "10000", "10000", "11111"],
+            "3": ["11110", "00001", "00001", "01110", "00001", "00001", "11110"],
+            "4": ["10010", "10010", "10010", "11111", "00010", "00010", "00010"],
+            "5": ["11111", "10000", "10000", "11110", "00001", "00001", "11110"],
+            "6": ["01111", "10000", "10000", "11110", "10001", "10001", "01110"],
+            "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+            "8": ["01110", "10001", "10001", "01110", "10001", "10001", "01110"],
+            "9": ["01110", "10001", "10001", "01111", "00001", "00001", "11110"],
+            "-": ["0000", "0000", "0000", "1111", "0000", "0000", "0000"],
+            ":": ["0", "1", "1", "0", "1", "1", "0"],
+            "A": ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+            "D": ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+            "E": ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+            "F": ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+            "H": ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+            "I": ["111", "010", "010", "010", "010", "010", "111"],
+            "M": ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+            "N": ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+            "O": ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+            "R": ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+            "S": ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+            "T": ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+            "U": ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+            "W": ["10001", "10001", "10001", "10101", "10101", "11011", "10001"],
+            " ": ["0", "0", "0", "0", "0", "0", "0"]
+        };
+
+        const targets = {
+            day: document.getElementById("dayText"),
+            date: document.getElementById("dateText"),
+            time: document.getElementById("timeText"),
+            seconds: document.getElementById("secondsText"),
+            month: document.getElementById("monthZh"),
+            dayZh: document.getElementById("dayZh"),
+            needle: document.getElementById("needle"),
+            step: document.getElementById("stepMini"),
+            stat: document.getElementById("statText"),
+            bars: document.querySelector(".bars")
+        };
+
+        const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+        const zhMonths = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+        const zhDays = ["初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十", "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十", "卅一"];
+
+        function pad(value) {
+            return String(value).padStart(2, "0");
+        }
+
+        function renderMatrix(element, text, glyphSet) {
+            const value = String(text);
+            if (element.dataset.value === value) return;
+            element.dataset.value = value;
+            element.innerHTML = "";
+
+            [...value].forEach((char) => {
+                const glyph = glyphSet[char.toUpperCase()] || glyphSet[" "];
+                const node = document.createElement("span");
+                node.className = "dot-char";
+                node.style.setProperty("--cols", glyph[0].length);
+
+                glyph.forEach((row) => {
+                    [...row].forEach((bit) => {
+                        const pixel = document.createElement("span");
+                        pixel.className = bit === "1" ? "dot-pixel is-on" : "dot-pixel";
+                        node.appendChild(pixel);
+                    });
+                });
+
+                element.appendChild(node);
+            });
+        }
+
+        function buildBars() {
+            targets.bars.innerHTML = "";
+            for (let i = 0; i < 14; i++) {
+                const bar = document.createElement("span");
+                bar.className = "bar";
+                targets.bars.appendChild(bar);
+            }
+        }
+
+        function buildTicks() {
+            const gauge = document.getElementById("gauge");
+            for (let i = -62; i <= 62; i += 10) {
+                const tick = document.createElement("span");
+                tick.className = "tick";
+                tick.style.setProperty("--a", `${i}deg`);
+                gauge.appendChild(tick);
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+            const day = now.getDate();
+
+            renderMatrix(targets.day, days[now.getDay()], thinGlyph);
+            renderMatrix(targets.date, `${pad(now.getMonth() + 1)}-${pad(day)}`, thinGlyph);
+            renderMatrix(targets.time, `${pad(h)}:${pad(m)}`, thickGlyph);
+            renderMatrix(targets.seconds, pad(s), thickGlyph);
+
+            targets.month.textContent = zhMonths[now.getMonth()];
+            targets.dayZh.textContent = zhDays[day - 1] || String(day);
+            targets.needle.style.setProperty("--needle-angle", `${(s / 60) * 124 - 62}deg`);
+            targets.step.textContent = pad((h * 3 + m) % 100);
+            targets.stat.innerHTML = `<span>${pad((m % 20) + 1)}</span><span>${s % 10 || 2}</span>`;
+        }
+
+        buildBars();
+        buildTicks();
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>

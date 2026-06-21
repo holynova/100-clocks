@@ -253,6 +253,29 @@
             transform: rotate(90deg);
         }
 
+        .clock-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            color: #777;
+            text-decoration: none;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 7px 10px;
+            background: rgba(0, 0, 0, 0.28);
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+
+        .clock-link:hover {
+            color: var(--text-active);
+            border-color: var(--text-active);
+            background: rgba(0, 0, 0, 0.58);
+        }
+
         .settings-panel {
             position: absolute;
             top: 60px;
@@ -406,6 +429,7 @@
 </head>
 <body>
 
+    <a class="clock-link" href="clock3.html">Sport Watch</a>
     <div class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙</div>
 
     <div class="settings-panel" id="settingsPanel">
