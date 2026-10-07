@@ -162,12 +162,19 @@
     color: var(--faint);
   }
 
-  /* 读秒 */
-  .sec { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: calc(var(--size) * 0.035); }
+  /* 读秒：文字拼读 */
+  .sec { display: flex; align-items: center; justify-content: center; margin-top: calc(var(--size) * 0.035); }
   .sec[hidden] { display: none; }
-  .sec-track { width: calc(var(--size) * 0.32); max-width: 180px; height: 2px; background: var(--dim); opacity: .55; border-radius: 2px; overflow: hidden; }
-  .sec-fill { height: 100%; width: 0%; background: var(--c); box-shadow: 0 0 8px var(--glow); }
-  .sec-num { font-size: 12px; color: var(--c); letter-spacing: 2px; min-width: 34px; text-align: left; text-shadow: 0 0 8px var(--glow); font-variant-numeric: tabular-nums; }
+  .sec-words {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-indent: 5px;
+    color: var(--c);
+    text-shadow: 0 0 10px var(--glow), 0 0 26px var(--glow);
+    white-space: nowrap;
+  }
+  html[data-lang="zh"] .sec-words { letter-spacing: 9px; text-indent: 9px; }
 
   /* 底部控制条：精度 + 读秒开关 */
   .controls {
@@ -222,8 +229,7 @@
   </div>
   <div class="hint" id="hint">五分钟精度</div>
   <div class="sec" id="secRow" hidden>
-    <div class="sec-track"><div class="sec-fill" id="secFill"></div></div>
-    <div class="sec-num" id="secNum">00</div>
+    <div class="sec-words" id="secWords"></div>
   </div>
 </div>
 
@@ -235,6 +241,7 @@
     <button data-p="15">15分</button>
   </div>
   <button class="pill" id="secToggle">读秒 关</button>
+  <button class="pill" id="debugToggle">调试 关</button>
 </div>
 
 <script>
@@ -323,15 +330,34 @@
   var THEMES = ['amber', 'green', 'blue', 'red', 'white'];
   var precSeg = document.getElementById('precSeg');
   var secToggle = document.getElementById('secToggle');
+  var debugToggle = document.getElementById('debugToggle');
   var secRow = document.getElementById('secRow');
-  var secFill = document.getElementById('secFill');
-  var secNum = document.getElementById('secNum');
+  var secWords = document.getElementById('secWords');
   var cdots = [0, 1, 2, 3].map(function (i) { return document.getElementById('cdot' + i); });
 
   var lang = 'zh';
   var precision = 5;      // 1 | 5 | 10 | 15
   var showSeconds = false;
   var cells = [];
+
+  /* 秒数 -> 文字 */
+  var EN_ONES = ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
+  var EN_TEENS = ['TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+  var EN_TENS = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY'];
+  function enSecondWord(s) {
+    var w;
+    if (s < 10) w = EN_ONES[s];
+    else if (s < 20) w = EN_TEENS[s - 10];
+    else w = EN_TENS[Math.floor(s / 10)] + (s % 10 ? ' ' + EN_ONES[s % 10] : '');
+    return w + (s === 1 ? ' SECOND' : ' SECONDS');
+  }
+  var ZH_DIG = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  function zhSecondWord(s) {
+    var w;
+    if (s < 10) w = ZH_DIG[s];
+    else w = (s < 20 ? '' : ZH_DIG[Math.floor(s / 10)]) + '十' + (s % 10 ? ZH_DIG[s % 10] : '');
+    return w + '秒';
+  }
 
   function buildGrid(rows) {
     grid.innerHTML = '';
@@ -427,8 +453,22 @@
   }
 
   var lastKey = '';
+  var simTime = null;   // 调试模式下的模拟时间
+  var lastReal = 0;
+  var debugOn = false;
+  var DEBUG_SPEED = 60; // 调试：1 真实秒 = 60 时钟秒
   function tick() {
-    var now = new Date();
+    var realNow = new Date();
+    var now;
+    if (debugOn) {
+      if (!simTime) { simTime = new Date(realNow.getTime()); lastReal = realNow.getTime(); }
+      var dt = realNow.getTime() - lastReal;
+      lastReal = realNow.getTime();
+      simTime = new Date(simTime.getTime() + dt * DEBUG_SPEED);
+      now = simTime;
+    } else {
+      now = realNow;
+    }
     var totalMin = now.getHours() * 60 + now.getMinutes();
     var h, m, dots = 0;
     if (precision === 1) {
@@ -462,10 +502,9 @@
   }
 
   function updateSeconds(now) {
-    var s = now.getSeconds() + now.getMilliseconds() / 1000;
-    secFill.style.width = (s / 60 * 100).toFixed(1) + '%';
-    var txt = (now.getSeconds() < 10 ? '0' : '') + now.getSeconds();
-    if (secNum.textContent !== txt) secNum.textContent = txt;
+    var s = now.getSeconds();
+    var txt = lang === 'en' ? enSecondWord(s) : zhSecondWord(s);
+    if (secWords.textContent !== txt) secWords.textContent = txt;
   }
 
   function updateHint() {
@@ -500,6 +539,15 @@
     if (showSeconds) tick();
   }
 
+  function setDebug(on) {
+    debugOn = !!on;
+    simTime = null; // 重置模拟时间，关闭后回到真实时间
+    debugToggle.classList.toggle('active', debugOn);
+    debugToggle.textContent = debugOn ? '调试 开' : '调试 关';
+    lastKey = '';
+    tick();
+  }
+
   function setLang(next) {
     lang = next;
     document.documentElement.setAttribute('data-lang', next);
@@ -532,6 +580,7 @@
     if (p) setPrecision(p);
   });
   secToggle.addEventListener('click', function () { setSeconds(!showSeconds); });
+  debugToggle.addEventListener('click', function () { setDebug(!debugOn); });
 
   /* 恢复上次选择 */
   var savedLang = 'zh', savedTheme = 'amber', savedPrec = '5', savedSec = '0';
