@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-lang="zh">
+<head>
+<script
+  defer
+  src="https://cloud.umami.is/script.js"
+  data-website-id="e01c9f78-4607-4e60-b01c-77c8190b12b4"
+  data-domains="holynova.github.io"
+  data-exclude-search="true"
+  data-exclude-hash="true"
+></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Clock · 文字时钟</title>
+<style>
+  :root { --size: min(92vmin, 620px); }
+  [data-theme="light"] {
+    --bg: #f3f0e9;
+    --ink: #161616;
+    --dim: #d8d3c5;
+    --faint: #b9b3a3;
+    --hair: #e3ded1;
+  }
+  [data-theme="dark"] {
+    --bg: #0e0e11;
+    --ink: #f3f0e9;
+    --dim: #2b2b32;
+    --faint: #55555e;
+    --hair: #222228;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Avenir Next", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    transition: background .3s, color .3s;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* 顶部导航 / 工具条：极简 */
+  .nav {
+    position: fixed;
+    top: 18px;
+    left: 22px;
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    z-index: 10;
+  }
+  .nav a {
+    color: var(--faint);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .nav a:hover { color: var(--ink); }
+  .nav .current { color: var(--ink); cursor: default; }
+
+  .tools {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+  .seg {
+    display: flex;
+    border: 1px solid var(--hair);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .seg button, .icon-btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--faint);
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 7px 13px;
+    cursor: pointer;
+    transition: color .2s, background .2s;
+  }
+  .seg button.active { background: var(--ink); color: var(--bg); }
+  .seg button:not(.active):hover { color: var(--ink); }
+  .icon-btn {
+    border: 1px solid var(--hair);
+    border-radius: 999px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .icon-btn:hover { color: var(--ink); border-color: var(--faint); }
+
+  .stage {
+    width: var(--size);
+    padding: calc(var(--size) * 0.05);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: calc(var(--size) * 0.014);
+    width: 100%;
+  }
+  .cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--size) / 16);
+    font-weight: 600;
+    color: var(--dim);
+    user-select: none;
+    transition: color .3s, text-shadow .3s;
+    line-height: 1;
+  }
+  html[data-lang="zh"] .cell {
+    font-size: calc(var(--size) / 13.5);
+    font-weight: 500;
+  }
+  .cell.on {
+    color: var(--ink);
+    text-shadow: 0 0 calc(var(--size) * 0.025) rgba(127, 127, 127, .35);
+  }
+
+  .hint {
+    margin-top: calc(var(--size) * 0.05);
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--faint);
+  }
+
+  @media (max-width: 480px) {
+    .nav { left: 16px; top: 14px; gap: 10px; }
+    .tools { right: 12px; top: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html">Matrix</a>
+  <a href="clock3.html">Sport</a>
+  <span class="current">Word</span>
+</nav>
+
+<div class="tools">
+  <div class="seg">
+    <button id="langZh" class="active">中文</button>
+    <button id="langEn">EN</button>
+  </div>
+  <button class="icon-btn" id="themeBtn" title="切换深色 / 浅色">☾</button>
+</div>
+
+<div class="stage">
+  <div class="grid" id="grid"></div>
+  <div class="hint" id="hint">五分钟精度</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var EN_ROWS = [
+    "ITLISASTHPM",
+    "ACFIFTEENDC",
+    "TWENTYFIVEW",
+    "THIRTYFTENO",
+    "MINUTESETOU",
+    "PASTORUNINE",
+    "ONESIXTHREE",
+    "FOURFIVETWO",
+    "EIGHTELEVEN",
+    "SEVENTWELVE",
+    "TENSEOCLOCK"
+  ];
+
+  var ZH_ROWS = [
+    "现在是凌晨上午中午下午",
+    "夜里晚上一二三四五六七",
+    "八九十一十二点整十五分",
+    "二十三十四十五十半刻·"
+  ];
+
+  /* 英文词 -> [行, 列] */
+  var EN_WORDS = {
+    IT: [[0,0],[0,1]], IS: [[0,3],[0,4]],
+    FIVE_M: [[2,6],[2,7],[2,8],[2,9]],
+    TEN_M: [[3,7],[3,8],[3,9]],
+    FIFTEEN: [[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8]],
+    TWENTY: [[2,0],[2,1],[2,2],[2,3],[2,4],[2,5]],
+    THIRTY: [[3,0],[3,1],[3,2],[3,3],[3,4],[3,5]],
+    MINUTES: [[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
+    PAST: [[5,0],[5,1],[5,2],[5,3]],
+    TO: [[4,8],[4,9]],
+    OCLOCK: [[10,5],[10,6],[10,7],[10,8],[10,9],[10,10]],
+    H1: [[6,0],[6,1],[6,2]],
+    H2: [[7,8],[7,9],[7,10]],
+    H3: [[6,6],[6,7],[6,8],[6,9],[6,10]],
+    H4: [[7,0],[7,1],[7,2],[7,3]],
+    H5: [[7,4],[7,5],[7,6],[7,7]],
+    H6: [[6,3],[6,4],[6,5]],
+    H7: [[9,0],[9,1],[9,2],[9,3],[9,4]],
+    H8: [[8,0],[8,1],[8,2],[8,3],[8,4]],
+    H9: [[5,7],[5,8],[5,9],[5,10]],
+    H10: [[10,0],[10,1],[10,2]],
+    H11: [[8,5],[8,6],[8,7],[8,8],[8,9],[8,10]],
+    H12: [[9,5],[9,6],[9,7],[9,8],[9,9],[9,10]]
+  };
+
+  /* 中文词 -> [行, 列] */
+  var ZH_WORDS = {
+    PRE: [[0,0],[0,1],[0,2]],          // 现在是
+    P0: [[0,3],[0,4]],                // 凌晨
+    P1: [[0,5],[0,6]],                // 上午
+    P2: [[0,7],[0,8]],                // 中午
+    P3: [[0,9],[0,10]],               // 下午
+    P4: [[1,2],[1,3]],                // 晚上
+    P5: [[1,0],[1,1]],                // 夜里
+    DOT: [[2,6]],                     // 点
+    ZHENG: [[2,7]],                   // 整
+    H1: [[1,4]], H2: [[1,5]], H3: [[1,6]], H4: [[1,7]],
+    H5: [[1,8]], H6: [[1,9]], H7: [[1,10]],
+    H8: [[2,0]], H9: [[2,1]], H10: [[2,2]],
+    H11: [[2,2],[2,3]], H12: [[2,4],[2,5]],
+    TEN1: [[2,8]], FIVE1: [[2,9]], FEN: [[2,10]],  // 十 / 五 / 分
+    T20: [[3,0],[3,1]], T30: [[3,2],[3,3]],
+    T40: [[3,4],[3,5]], T50: [[3,6],[3,7]],
+    S3: [[3,2]],                       // 三(刻)
+    BAN: [[3,8]], KE: [[3,9]]          // 半 / 刻
+  };
+
+  var grid = document.getElementById('grid');
+  var hint = document.getElementById('hint');
+  var langZhBtn = document.getElementById('langZh');
+  var langEnBtn = document.getElementById('langEn');
+  var themeBtn = document.getElementById('themeBtn');
+
+  var lang = 'zh';
+  var cells = [];
+
+  function buildGrid(rows) {
+    grid.innerHTML = '';
+    cells = [];
+    rows.forEach(function (row) {
+      for (var i = 0; i < row.length; i++) {
+        var d = document.createElement('div');
+        d.className = 'cell';
+        d.textContent = row[i];
+        grid.appendChild(d);
+        cells.push(d);
+      }
+    });
+  }
+
+  function light(words, names) {
+    var on = {};
+    names.forEach(function (n) {
+      (words[n] || []).forEach(function (p) { on[p[0] * 11 + p[1]] = true; });
+    });
+    for (var i = 0; i < cells.length; i++) {
+      cells[i].classList.toggle('on', !!on[i]);
+    }
+  }
+
+  function enNames(h, m) {
+    var names = ['IT', 'IS'];
+    if (m === 0) {
+      names.push('H' + h, 'OCLOCK');
+      return names;
+    }
+    var MIN = {
+      5: ['FIVE_M'], 10: ['TEN_M'], 15: ['FIFTEEN'],
+      20: ['TWENTY'], 25: ['TWENTY', 'FIVE_M'], 30: ['THIRTY'],
+      35: ['TWENTY', 'FIVE_M'], 40: ['TWENTY'], 45: ['FIFTEEN'],
+      50: ['TEN_M'], 55: ['FIVE_M']
+    }[m];
+    names = names.concat(MIN);
+    if (m !== 30) names.push('MINUTES');
+    if (m <= 30) {
+      names.push('PAST', 'H' + h);
+    } else {
+      names.push('TO', 'H' + (h % 12 + 1));
+    }
+    return names;
+  }
+
+  function zhNames(h24, m) {
+    var names = ['PRE'];
+    names.push(
+      h24 <= 5 ? 'P0' :
+      h24 <= 10 ? 'P1' :
+      h24 <= 13 ? 'P2' :
+      h24 <= 17 ? 'P3' :
+      h24 <= 22 ? 'P4' : 'P5'
+    );
+    names.push('H' + (h24 % 12 || 12), 'DOT');
+    var MIN = {
+      0: ['ZHENG'],
+      5: ['FIVE1', 'FEN'],
+      10: ['TEN1', 'FEN'],
+      15: ['H1', 'KE'],          // 一刻
+      20: ['T20', 'FEN'],
+      25: ['T20', 'FIVE1', 'FEN'],
+      30: ['BAN'],               // 半
+      35: ['T30', 'FIVE1', 'FEN'],
+      40: ['T40', 'FEN'],
+      45: ['S3', 'KE'],           // 三刻
+      50: ['T50', 'FEN'],
+      55: ['T50', 'FIVE1', 'FEN']
+    }[m];
+    return names.concat(MIN);
+  }
+
+  function tick() {
+    var now = new Date();
+    var rounded = Math.round((now.getHours() * 60 + now.getMinutes()) / 5) * 5;
+    var h = Math.floor(rounded / 60) % 24;
+    var m = rounded % 60;
+    if (lang === 'en') {
+      light(EN_WORDS, enNames(h % 12 || 12, m));
+    } else {
+      light(ZH_WORDS, zhNames(h, m));
+    }
+  }
+
+  function setLang(next) {
+    lang = next;
+    document.documentElement.setAttribute('data-lang', next);
+    buildGrid(next === 'en' ? EN_ROWS : ZH_ROWS);
+    langZhBtn.classList.toggle('active', next === 'zh');
+    langEnBtn.classList.toggle('active', next === 'en');
+    hint.textContent = next === 'en' ? '5-MINUTE PRECISION' : '五分钟精度';
+    try { localStorage.setItem('wordclock-lang', next); } catch (e) {}
+    tick();
+  }
+
+  function setTheme(next) {
+    document.documentElement.setAttribute('data-theme', next);
+    themeBtn.textContent = next === 'light' ? '☾' : '☀';
+    try { localStorage.setItem('wordclock-theme', next); } catch (e) {}
+  }
+
+  langZhBtn.addEventListener('click', function () { setLang('zh'); });
+  langEnBtn.addEventListener('click', function () { setLang('en'); });
+  themeBtn.addEventListener('click', function () {
+    setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+  });
+
+  /* 恢复上次选择 */
+  var savedLang = 'zh', savedTheme = 'light';
+  try {
+    savedLang = localStorage.getItem('wordclock-lang') || 'zh';
+    savedTheme = localStorage.getItem('wordclock-theme') || 'light';
+  } catch (e) {}
+  if (savedLang !== 'zh' && savedLang !== 'en') savedLang = 'zh';
+  if (savedTheme !== 'light' && savedTheme !== 'dark') savedTheme = 'light';
+
+  setTheme(savedTheme);
+  /* 先建格子再设语言，避免 buildGrid 两次 */
+  lang = savedLang;
+  document.documentElement.setAttribute('data-lang', lang);
+  buildGrid(lang === 'en' ? EN_ROWS : ZH_ROWS);
+  langZhBtn.classList.toggle('active', lang === 'zh');
+  langEnBtn.classList.toggle('active', lang === 'en');
+  hint.textContent = lang === 'en' ? '5-MINUTE PRECISION' : '五分钟精度';
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
