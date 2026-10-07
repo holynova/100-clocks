@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light" data-lang="zh">
+<html lang="zh-CN" data-theme="amber" data-lang="zh">
 <head>
 <script
   defer
@@ -13,27 +13,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Word Clock · 文字时钟</title>
 <style>
-  :root { --size: min(92vmin, 620px); }
-  [data-theme="light"] {
-    --bg: #f3f0e9;
-    --ink: #161616;
-    --dim: #d8d3c5;
-    --faint: #b9b3a3;
-    --hair: #e3ded1;
-  }
-  [data-theme="dark"] {
-    --bg: #0e0e11;
-    --ink: #f3f0e9;
-    --dim: #2b2b32;
-    --faint: #55555e;
-    --hair: #222228;
-  }
+  :root { --size: min(92vmin, 620px); --faint: #6b6b72; --hair: #2b2b30; }
+  /* 主题色：与 Matrix 时钟一致的荧光配色 */
+  [data-theme="amber"] { --c: #ffaa00; --dim: rgba(255,170,0,.22);  --glow: rgba(255,170,0,.55); }
+  [data-theme="green"] { --c: #00ff41; --dim: rgba(0,255,65,.20);   --glow: rgba(0,255,65,.55); }
+  [data-theme="blue"]  { --c: #00f3ff; --dim: rgba(0,243,255,.20);  --glow: rgba(0,243,255,.55); }
+  [data-theme="red"]   { --c: #ff003c; --dim: rgba(255,0,60,.22);   --glow: rgba(255,0,60,.55); }
+  [data-theme="white"] { --c: #f5f5f5; --dim: rgba(255,255,255,.16); --glow: rgba(255,255,255,.45); }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
     margin: 0;
-    background: var(--bg);
-    color: var(--ink);
+    background: #0a0a0c;
+    background-image: radial-gradient(circle at 50% 42%, #17171b 0%, #060607 75%);
+    color: var(--c);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,8 +54,8 @@
     text-decoration: none;
     transition: color .2s;
   }
-  .nav a:hover { color: var(--ink); }
-  .nav .current { color: var(--ink); cursor: default; }
+  .nav a:hover { color: var(--c); }
+  .nav .current { color: var(--c); cursor: default; }
 
   .tools {
     position: fixed;
@@ -78,7 +71,7 @@
     border-radius: 999px;
     overflow: hidden;
   }
-  .seg button, .icon-btn {
+  .seg button {
     appearance: none;
     border: 0;
     background: transparent;
@@ -90,20 +83,21 @@
     cursor: pointer;
     transition: color .2s, background .2s;
   }
-  .seg button.active { background: var(--ink); color: var(--bg); }
-  .seg button:not(.active):hover { color: var(--ink); }
-  .icon-btn {
-    border: 1px solid var(--hair);
-    border-radius: 999px;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
+  .seg button.active { background: var(--c); color: #0a0a0c; font-weight: 700; }
+  .seg button:not(.active):hover { color: var(--c); }
+  .dots { display: flex; align-items: center; gap: 9px; padding: 0 4px 0 10px; }
+  .dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
   }
-  .icon-btn:hover { color: var(--ink); border-color: var(--faint); }
+  .dot:hover { transform: scale(1.25); }
+  .dot.active { border-color: #fff; box-shadow: 0 0 10px currentColor; }
+  .dot[data-t="amber"] { background: #ffaa00; color: #ffaa00; }
+  .dot[data-t="green"] { background: #00ff41; color: #00ff41; }
+  .dot[data-t="blue"]  { background: #00f3ff; color: #00f3ff; }
+  .dot[data-t="red"]   { background: #ff003c; color: #ff003c; }
+  .dot[data-t="white"] { background: #f5f5f5; color: #f5f5f5; }
 
   .stage {
     width: var(--size);
@@ -132,8 +126,11 @@
     font-weight: 500;
   }
   .cell.on {
-    color: var(--ink);
-    text-shadow: 0 0 calc(var(--size) * 0.025) rgba(127, 127, 127, .35);
+    color: var(--c);
+    font-weight: 700;
+    text-shadow: 0 0 calc(var(--size) * 0.012) var(--glow),
+                 0 0 calc(var(--size) * 0.035) var(--glow),
+                 0 0 calc(var(--size) * 0.075) var(--glow);
   }
 
   .hint {
@@ -163,7 +160,13 @@
     <button id="langZh" class="active">中文</button>
     <button id="langEn">EN</button>
   </div>
-  <button class="icon-btn" id="themeBtn" title="切换深色 / 浅色">☾</button>
+  <div class="dots" id="themeDots" title="切换主题">
+    <div class="dot" data-t="amber" title="琥珀"></div>
+    <div class="dot" data-t="green" title="荧光绿"></div>
+    <div class="dot" data-t="blue" title="冰蓝"></div>
+    <div class="dot" data-t="red" title="霓虹红"></div>
+    <div class="dot" data-t="white" title="月白"></div>
+  </div>
 </div>
 
 <div class="stage">
@@ -253,7 +256,8 @@
   var hint = document.getElementById('hint');
   var langZhBtn = document.getElementById('langZh');
   var langEnBtn = document.getElementById('langEn');
-  var themeBtn = document.getElementById('themeBtn');
+  var dotsBox = document.getElementById('themeDots');
+  var THEMES = ['amber', 'green', 'blue', 'red', 'white'];
 
   var lang = 'zh';
   var cells = [];
@@ -355,25 +359,28 @@
   }
 
   function setTheme(next) {
+    if (THEMES.indexOf(next) === -1) next = 'amber';
     document.documentElement.setAttribute('data-theme', next);
-    themeBtn.textContent = next === 'light' ? '☾' : '☀';
+    dotsBox.querySelectorAll('.dot').forEach(function (d) {
+      d.classList.toggle('active', d.getAttribute('data-t') === next);
+    });
     try { localStorage.setItem('wordclock-theme', next); } catch (e) {}
   }
 
   langZhBtn.addEventListener('click', function () { setLang('zh'); });
   langEnBtn.addEventListener('click', function () { setLang('en'); });
-  themeBtn.addEventListener('click', function () {
-    setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+  dotsBox.addEventListener('click', function (e) {
+    var t = e.target && e.target.getAttribute && e.target.getAttribute('data-t');
+    if (t) setTheme(t);
   });
 
   /* 恢复上次选择 */
-  var savedLang = 'zh', savedTheme = 'light';
+  var savedLang = 'zh', savedTheme = 'amber';
   try {
     savedLang = localStorage.getItem('wordclock-lang') || 'zh';
-    savedTheme = localStorage.getItem('wordclock-theme') || 'light';
+    savedTheme = localStorage.getItem('wordclock-theme') || 'amber';
   } catch (e) {}
   if (savedLang !== 'zh' && savedLang !== 'en') savedLang = 'zh';
-  if (savedTheme !== 'light' && savedTheme !== 'dark') savedTheme = 'light';
 
   setTheme(savedTheme);
   /* 先建格子再设语言，避免 buildGrid 两次 */
