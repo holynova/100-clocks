@@ -103,6 +103,27 @@
     width: var(--size);
     padding: calc(var(--size) * 0.05);
   }
+  .grid-wrap { position: relative; }
+  /* 1分钟模式：四角圆点表示 +1~4 分钟 */
+  .cdot {
+    position: absolute;
+    width: max(6px, calc(var(--size) * 0.016));
+    height: max(6px, calc(var(--size) * 0.016));
+    border-radius: 50%;
+    background: var(--dim);
+    opacity: .45;
+    transition: background .3s, box-shadow .3s, opacity .3s;
+  }
+  .cdot.on {
+    background: var(--c);
+    opacity: 1;
+    box-shadow: 0 0 calc(var(--size) * 0.02) var(--glow),
+                0 0 calc(var(--size) * 0.045) var(--glow);
+  }
+  #cdot0 { top: calc(var(--size) * -0.035); left: calc(var(--size) * -0.035); }
+  #cdot1 { top: calc(var(--size) * -0.035); right: calc(var(--size) * -0.035); }
+  #cdot2 { bottom: calc(var(--size) * -0.035); right: calc(var(--size) * -0.035); }
+  #cdot3 { bottom: calc(var(--size) * -0.035); left: calc(var(--size) * -0.035); }
   .grid {
     display: grid;
     grid-template-columns: repeat(11, 1fr);
@@ -141,6 +162,28 @@
     color: var(--faint);
   }
 
+  /* 读秒 */
+  .sec { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: calc(var(--size) * 0.035); }
+  .sec[hidden] { display: none; }
+  .sec-track { width: calc(var(--size) * 0.32); max-width: 180px; height: 2px; background: var(--dim); opacity: .55; border-radius: 2px; overflow: hidden; }
+  .sec-fill { height: 100%; width: 0%; background: var(--c); box-shadow: 0 0 8px var(--glow); }
+  .sec-num { font-size: 12px; color: var(--c); letter-spacing: 2px; min-width: 34px; text-align: left; text-shadow: 0 0 8px var(--glow); font-variant-numeric: tabular-nums; }
+
+  /* 底部控制条：精度 + 读秒开关 */
+  .controls {
+    position: fixed;
+    bottom: 18px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; align-items: center; z-index: 10;
+  }
+  .pill {
+    appearance: none; border: 1px solid var(--hair); border-radius: 999px;
+    background: transparent; color: var(--faint);
+    font-family: inherit; font-size: 12px; letter-spacing: 1px;
+    padding: 7px 14px; cursor: pointer; transition: all .2s; white-space: nowrap;
+  }
+  .pill.active { background: var(--c); border-color: var(--c); color: #0a0a0c; font-weight: 700; }
+  .pill:not(.active):hover { color: var(--c); border-color: var(--faint); }
+
   @media (max-width: 480px) {
     .nav { left: 16px; top: 14px; gap: 10px; }
     .tools { right: 12px; top: 10px; }
@@ -170,8 +213,28 @@
 </div>
 
 <div class="stage">
-  <div class="grid" id="grid"></div>
+  <div class="grid-wrap">
+    <div class="grid" id="grid"></div>
+    <div class="cdot" id="cdot0"></div>
+    <div class="cdot" id="cdot1"></div>
+    <div class="cdot" id="cdot2"></div>
+    <div class="cdot" id="cdot3"></div>
+  </div>
   <div class="hint" id="hint">五分钟精度</div>
+  <div class="sec" id="secRow" hidden>
+    <div class="sec-track"><div class="sec-fill" id="secFill"></div></div>
+    <div class="sec-num" id="secNum">00</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="seg" id="precSeg">
+    <button data-p="1">1分</button>
+    <button data-p="5" class="active">5分</button>
+    <button data-p="10">10分</button>
+    <button data-p="15">15分</button>
+  </div>
+  <button class="pill" id="secToggle">读秒 关</button>
 </div>
 
 <script>
@@ -258,8 +321,16 @@
   var langEnBtn = document.getElementById('langEn');
   var dotsBox = document.getElementById('themeDots');
   var THEMES = ['amber', 'green', 'blue', 'red', 'white'];
+  var precSeg = document.getElementById('precSeg');
+  var secToggle = document.getElementById('secToggle');
+  var secRow = document.getElementById('secRow');
+  var secFill = document.getElementById('secFill');
+  var secNum = document.getElementById('secNum');
+  var cdots = [0, 1, 2, 3].map(function (i) { return document.getElementById('cdot' + i); });
 
   var lang = 'zh';
+  var precision = 5;      // 1 | 5 | 10 | 15
+  var showSeconds = false;
   var cells = [];
 
   function buildGrid(rows) {
@@ -286,18 +357,25 @@
     }
   }
 
-  function enNames(h, m) {
+  function enNames(h, m, prec) {
     var names = ['IT', 'IS'];
     if (m === 0) {
       names.push('H' + h, 'OCLOCK');
       return names;
     }
-    var MIN = {
-      5: ['FIVE_M'], 10: ['TEN_M'], 15: ['FIFTEEN'],
-      20: ['TWENTY'], 25: ['TWENTY', 'FIVE_M'], 30: ['THIRTY'],
-      35: ['TWENTY', 'FIVE_M'], 40: ['TWENTY'], 45: ['FIFTEEN'],
-      50: ['TEN_M'], 55: ['FIVE_M']
-    }[m];
+    var MIN;
+    if (prec === 10) {
+      MIN = { 10: ['TEN_M'], 20: ['TWENTY'], 30: ['THIRTY'], 40: ['TWENTY'], 50: ['TEN_M'] }[m];
+    } else if (prec === 15) {
+      MIN = { 15: ['FIFTEEN'], 30: ['THIRTY'], 45: ['FIFTEEN'] }[m];
+    } else {
+      MIN = {
+        5: ['FIVE_M'], 10: ['TEN_M'], 15: ['FIFTEEN'],
+        20: ['TWENTY'], 25: ['TWENTY', 'FIVE_M'], 30: ['THIRTY'],
+        35: ['TWENTY', 'FIVE_M'], 40: ['TWENTY'], 45: ['FIFTEEN'],
+        50: ['TEN_M'], 55: ['FIVE_M']
+      }[m];
+    }
     names = names.concat(MIN);
     if (m !== 30) names.push('MINUTES');
     if (m <= 30) {
@@ -308,7 +386,7 @@
     return names;
   }
 
-  function zhNames(h24, m) {
+  function zhNames(h24, m, prec) {
     var names = ['PRE'];
     names.push(
       h24 <= 5 ? 'P0' :
@@ -318,33 +396,108 @@
       h24 <= 22 ? 'P4' : 'P5'
     );
     names.push('H' + (h24 % 12 || 12), 'DOT');
-    var MIN = {
-      0: ['ZHENG'],
-      5: ['FIVE1', 'FEN'],
-      10: ['TEN1', 'FEN'],
-      15: ['YI15', 'KE15'],      // 一刻
-      20: ['T20', 'FEN'],
-      25: ['T20', 'FIVE1', 'FEN'],
-      30: ['BAN'],               // 半
-      35: ['T30', 'FIVE1', 'FEN'],
-      40: ['T40', 'FEN'],
-      45: ['S3', 'KE45'],        // 三刻
-      50: ['T50', 'FEN'],
-      55: ['T50', 'FIVE1', 'FEN']
-    }[m];
+    var MIN;
+    if (prec === 10) {
+      MIN = {
+        0: ['ZHENG'], 10: ['TEN1', 'FEN'], 20: ['T20', 'FEN'],
+        30: ['BAN'], 40: ['T40', 'FEN'], 50: ['T50', 'FEN']
+      }[m];
+    } else if (prec === 15) {
+      MIN = {
+        0: ['ZHENG'], 15: ['YI15', 'KE15'],
+        30: ['BAN'], 45: ['S3', 'KE45']
+      }[m];
+    } else {
+      MIN = {
+        0: ['ZHENG'],
+        5: ['FIVE1', 'FEN'],
+        10: ['TEN1', 'FEN'],
+        15: ['YI15', 'KE15'],      // 一刻
+        20: ['T20', 'FEN'],
+        25: ['T20', 'FIVE1', 'FEN'],
+        30: ['BAN'],               // 半
+        35: ['T30', 'FIVE1', 'FEN'],
+        40: ['T40', 'FEN'],
+        45: ['S3', 'KE45'],        // 三刻
+        50: ['T50', 'FEN'],
+        55: ['T50', 'FIVE1', 'FEN']
+      }[m];
+    }
     return names.concat(MIN);
   }
 
+  var lastKey = '';
   function tick() {
     var now = new Date();
-    var rounded = Math.round((now.getHours() * 60 + now.getMinutes()) / 5) * 5;
-    var h = Math.floor(rounded / 60) % 24;
-    var m = rounded % 60;
-    if (lang === 'en') {
-      light(EN_WORDS, enNames(h % 12 || 12, m));
+    var totalMin = now.getHours() * 60 + now.getMinutes();
+    var h, m, dots = 0;
+    if (precision === 1) {
+      /* 1分钟模式：文字向下取整到5分钟，四角圆点补 +1~4 */
+      var base = Math.floor(totalMin / 5) * 5;
+      h = Math.floor(base / 60) % 24;
+      m = base % 60;
+      dots = totalMin - base;
     } else {
-      light(ZH_WORDS, zhNames(h, m));
+      var rounded = Math.round(totalMin / precision) * precision;
+      h = Math.floor(rounded / 60) % 24;
+      m = rounded % 60;
     }
+    var key = lang + '|' + precision + '|' + h + '|' + m + '|' + dots;
+    if (key !== lastKey) {
+      lastKey = key;
+      if (lang === 'en') {
+        light(EN_WORDS, enNames(h % 12 || 12, m, precision));
+      } else {
+        light(ZH_WORDS, zhNames(h, m, precision));
+      }
+      updateDots(dots);
+    }
+    if (showSeconds) updateSeconds(now);
+  }
+
+  function updateDots(n) {
+    for (var i = 0; i < 4; i++) {
+      cdots[i].classList.toggle('on', precision === 1 && i < n);
+    }
+  }
+
+  function updateSeconds(now) {
+    var s = now.getSeconds() + now.getMilliseconds() / 1000;
+    secFill.style.width = (s / 60 * 100).toFixed(1) + '%';
+    var txt = (now.getSeconds() < 10 ? '0' : '') + now.getSeconds();
+    if (secNum.textContent !== txt) secNum.textContent = txt;
+  }
+
+  function updateHint() {
+    var zh = lang === 'zh';
+    hint.textContent = {
+      1: zh ? '一分钟精度 · 角点为+1~4分' : '1-MINUTE PRECISION · DOTS +1-4',
+      5: zh ? '五分钟精度' : '5-MINUTE PRECISION',
+      10: zh ? '十分钟精度' : '10-MINUTE PRECISION',
+      15: zh ? '十五分钟精度' : '15-MINUTE PRECISION'
+    }[precision];
+  }
+
+  function setPrecision(p) {
+    p = parseInt(p, 10);
+    if ([1, 5, 10, 15].indexOf(p) === -1) p = 5;
+    precision = p;
+    precSeg.querySelectorAll('button').forEach(function (b) {
+      b.classList.toggle('active', parseInt(b.getAttribute('data-p'), 10) === p);
+    });
+    lastKey = '';
+    updateHint();
+    try { localStorage.setItem('wordclock-precision', String(p)); } catch (e) {}
+    tick();
+  }
+
+  function setSeconds(on) {
+    showSeconds = !!on;
+    secRow.hidden = !showSeconds;
+    secToggle.classList.toggle('active', showSeconds);
+    secToggle.textContent = showSeconds ? '读秒 开' : '读秒 关';
+    try { localStorage.setItem('wordclock-seconds', showSeconds ? '1' : '0'); } catch (e) {}
+    if (showSeconds) tick();
   }
 
   function setLang(next) {
@@ -353,7 +506,8 @@
     buildGrid(next === 'en' ? EN_ROWS : ZH_ROWS);
     langZhBtn.classList.toggle('active', next === 'zh');
     langEnBtn.classList.toggle('active', next === 'en');
-    hint.textContent = next === 'en' ? '5-MINUTE PRECISION' : '五分钟精度';
+    lastKey = '';
+    updateHint();
     try { localStorage.setItem('wordclock-lang', next); } catch (e) {}
     tick();
   }
@@ -373,12 +527,19 @@
     var t = e.target && e.target.getAttribute && e.target.getAttribute('data-t');
     if (t) setTheme(t);
   });
+  precSeg.addEventListener('click', function (e) {
+    var p = e.target && e.target.getAttribute && e.target.getAttribute('data-p');
+    if (p) setPrecision(p);
+  });
+  secToggle.addEventListener('click', function () { setSeconds(!showSeconds); });
 
   /* 恢复上次选择 */
-  var savedLang = 'zh', savedTheme = 'amber';
+  var savedLang = 'zh', savedTheme = 'amber', savedPrec = '5', savedSec = '0';
   try {
     savedLang = localStorage.getItem('wordclock-lang') || 'zh';
     savedTheme = localStorage.getItem('wordclock-theme') || 'amber';
+    savedPrec = localStorage.getItem('wordclock-precision') || '5';
+    savedSec = localStorage.getItem('wordclock-seconds') || '0';
   } catch (e) {}
   if (savedLang !== 'zh' && savedLang !== 'en') savedLang = 'zh';
 
@@ -389,9 +550,10 @@
   buildGrid(lang === 'en' ? EN_ROWS : ZH_ROWS);
   langZhBtn.classList.toggle('active', lang === 'zh');
   langEnBtn.classList.toggle('active', lang === 'en');
-  hint.textContent = lang === 'en' ? '5-MINUTE PRECISION' : '五分钟精度';
+  setPrecision(savedPrec);
+  setSeconds(savedSec === '1');
   tick();
-  setInterval(tick, 1000);
+  setInterval(tick, 250);
 })();
 </script>
 </body>
