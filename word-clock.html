@@ -13,7 +13,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Word Clock · 文字时钟</title>
 <style>
-  :root { --size: min(92vmin, 620px); --faint: #6b6b72; --hair: #2b2b30; }
+  :root {
+    --rows: 24;
+    --size: min(92vmin, 620px, calc((100dvh - 190px) * 11 / var(--rows)));
+    --faint: #6b6b72; --hair: #2b2b30;
+  }
   /* 主题色：与 Matrix 时钟一致的荧光配色 */
   [data-theme="amber"] { --c: #ffaa00; --dim: rgba(255,170,0,.22);  --glow: rgba(255,170,0,.55); }
   [data-theme="green"] { --c: #00ff41; --dim: rgba(0,255,65,.20);   --glow: rgba(0,255,65,.55); }
@@ -103,27 +107,6 @@
     width: var(--size);
     padding: calc(var(--size) * 0.05);
   }
-  .grid-wrap { position: relative; }
-  /* 1分钟模式：四角圆点表示 +1~4 分钟 */
-  .cdot {
-    position: absolute;
-    width: max(6px, calc(var(--size) * 0.016));
-    height: max(6px, calc(var(--size) * 0.016));
-    border-radius: 50%;
-    background: var(--dim);
-    opacity: .45;
-    transition: background .3s, box-shadow .3s, opacity .3s;
-  }
-  .cdot.on {
-    background: var(--c);
-    opacity: 1;
-    box-shadow: 0 0 calc(var(--size) * 0.02) var(--glow),
-                0 0 calc(var(--size) * 0.045) var(--glow);
-  }
-  #cdot0 { top: calc(var(--size) * -0.035); left: calc(var(--size) * -0.035); }
-  #cdot1 { top: calc(var(--size) * -0.035); right: calc(var(--size) * -0.035); }
-  #cdot2 { bottom: calc(var(--size) * -0.035); right: calc(var(--size) * -0.035); }
-  #cdot3 { bottom: calc(var(--size) * -0.035); left: calc(var(--size) * -0.035); }
   .grid {
     display: grid;
     grid-template-columns: repeat(11, 1fr);
@@ -220,13 +203,7 @@
 </div>
 
 <div class="stage">
-  <div class="grid-wrap">
-    <div class="grid" id="grid"></div>
-    <div class="cdot" id="cdot0"></div>
-    <div class="cdot" id="cdot1"></div>
-    <div class="cdot" id="cdot2"></div>
-    <div class="cdot" id="cdot3"></div>
-  </div>
+  <div class="grid" id="grid"></div>
   <div class="hint" id="hint">五分钟精度</div>
   <div class="sec" id="secRow" hidden>
     <div class="sec-words" id="secWords"></div>
@@ -251,48 +228,82 @@
   var EN_ROWS = [
     "ITLISASTHPM",
     "ACFIFTEENDC",
-    "TWENTYFIVEW",
-    "THIRTYFTENO",
+    "TWENTYFORTY",
+    "THIRTYFIFTY",
+    "FIVETENONEX",
+    "TWOTHREEXXX",
+    "FOURSIXNINE",
+    "SEVENEIGHTX",
+    "ELEVENXXXXX",
+    "TWELVEXXXXX",
+    "THIRTEENXXX",
+    "FOURTEENXXX",
+    "SIXTEENXXXX",
+    "SEVENTEENXX",
+    "EIGHTEENXXX",
+    "NINETEENXXX",
     "MINUTESETOU",
-    "PASTORUNINE",
-    "ONESIXTHREE",
-    "FOURFIVETWO",
-    "EIGHTELEVEN",
-    "SEVENTWELVE",
-    "TENSEOCLOCK"
+    "PASTXXXFOUR",
+    "ONETWOTHREE",
+    "FIVESIXNINE",
+    "SEVENEIGHTX",
+    "TENELEVENXX",
+    "TWELVEXXXXX",
+    "OCLOCKXXXXX"
   ];
 
   var ZH_ROWS = [
     "现在是凌晨上午中午下午",
     "夜里晚上一二三四五六七",
-    "八九十一十二点整半一刻",
-    "二十三十刻四十五十五分"
+    "八九十一十二点整半··",
+    "一二十三十四十五十刻·",
+    "十一二三四五六七八九·",
+    "分··········"
   ];
 
-  /* 英文词 -> [行, 列] */
+  /* 英文词 -> [行, 列]（分钟个位/十几与小时词分开，保证阅读顺序） */
   var EN_WORDS = {
     IT: [[0,0],[0,1]], IS: [[0,3],[0,4]],
-    FIVE_M: [[2,6],[2,7],[2,8],[2,9]],
-    TEN_M: [[3,7],[3,8],[3,9]],
     FIFTEEN: [[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8]],
     TWENTY: [[2,0],[2,1],[2,2],[2,3],[2,4],[2,5]],
+    FORTY: [[2,6],[2,7],[2,8],[2,9],[2,10]],
     THIRTY: [[3,0],[3,1],[3,2],[3,3],[3,4],[3,5]],
-    MINUTES: [[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
-    PAST: [[5,0],[5,1],[5,2],[5,3]],
-    TO: [[4,8],[4,9]],
-    OCLOCK: [[10,5],[10,6],[10,7],[10,8],[10,9],[10,10]],
-    H1: [[6,0],[6,1],[6,2]],
-    H2: [[7,8],[7,9],[7,10]],
-    H3: [[6,6],[6,7],[6,8],[6,9],[6,10]],
-    H4: [[7,0],[7,1],[7,2],[7,3]],
-    H5: [[7,4],[7,5],[7,6],[7,7]],
-    H6: [[6,3],[6,4],[6,5]],
-    H7: [[9,0],[9,1],[9,2],[9,3],[9,4]],
-    H8: [[8,0],[8,1],[8,2],[8,3],[8,4]],
-    H9: [[5,7],[5,8],[5,9],[5,10]],
-    H10: [[10,0],[10,1],[10,2]],
-    H11: [[8,5],[8,6],[8,7],[8,8],[8,9],[8,10]],
-    H12: [[9,5],[9,6],[9,7],[9,8],[9,9],[9,10]]
+    FIFTY: [[3,6],[3,7],[3,8],[3,9],[3,10]],
+    ONE_M: [[4,7],[4,8],[4,9]],
+    TWO_M: [[5,0],[5,1],[5,2]],
+    THREE_M: [[5,3],[5,4],[5,5],[5,6],[5,7]],
+    FOUR_M: [[6,0],[6,1],[6,2],[6,3]],
+    FIVE_M: [[4,0],[4,1],[4,2],[4,3]],
+    SIX_M: [[6,4],[6,5],[6,6]],
+    SEVEN_M: [[7,0],[7,1],[7,2],[7,3],[7,4]],
+    EIGHT_M: [[7,5],[7,6],[7,7],[7,8],[7,9]],
+    NINE_M: [[6,7],[6,8],[6,9],[6,10]],
+    TEN_M: [[4,4],[4,5],[4,6]],
+    ELEVEN_M: [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5]],
+    TWELVE_M: [[9,0],[9,1],[9,2],[9,3],[9,4],[9,5]],
+    THIRTEEN_M: [[10,0],[10,1],[10,2],[10,3],[10,4],[10,5],[10,6],[10,7]],
+    FOURTEEN_M: [[11,0],[11,1],[11,2],[11,3],[11,4],[11,5],[11,6],[11,7]],
+    SIXTEEN_M: [[12,0],[12,1],[12,2],[12,3],[12,4],[12,5],[12,6]],
+    SEVENTEEN_M: [[13,0],[13,1],[13,2],[13,3],[13,4],[13,5],[13,6],[13,7],[13,8]],
+    EIGHTEEN_M: [[14,0],[14,1],[14,2],[14,3],[14,4],[14,5],[14,6],[14,7]],
+    NINETEEN_M: [[15,0],[15,1],[15,2],[15,3],[15,4],[15,5],[15,6],[15,7]],
+    MINUTES: [[16,0],[16,1],[16,2],[16,3],[16,4],[16,5],[16,6]],
+    MINUTE: [[16,0],[16,1],[16,2],[16,3],[16,4],[16,5]],
+    TO: [[16,8],[16,9]],
+    PAST: [[17,0],[17,1],[17,2],[17,3]],
+    ONE_H: [[18,0],[18,1],[18,2]],
+    TWO_H: [[18,3],[18,4],[18,5]],
+    THREE_H: [[18,6],[18,7],[18,8],[18,9],[18,10]],
+    FOUR_H: [[17,7],[17,8],[17,9],[17,10]],
+    FIVE_H: [[19,0],[19,1],[19,2],[19,3]],
+    SIX_H: [[19,4],[19,5],[19,6]],
+    SEVEN_H: [[20,0],[20,1],[20,2],[20,3],[20,4]],
+    EIGHT_H: [[20,5],[20,6],[20,7],[20,8],[20,9]],
+    NINE_H: [[19,7],[19,8],[19,9],[19,10]],
+    TEN_H: [[21,0],[21,1],[21,2]],
+    ELEVEN_H: [[21,3],[21,4],[21,5],[21,6],[21,7],[21,8]],
+    TWELVE_H: [[22,0],[22,1],[22,2],[22,3],[22,4],[22,5]],
+    OCLOCK: [[23,0],[23,1],[23,2],[23,3],[23,4],[23,5]]
   };
 
   /* 中文词 -> [行, 列] */
@@ -304,22 +315,24 @@
     P3: [[0,9],[0,10]],               // 下午
     P4: [[1,2],[1,3]],                // 晚上
     P5: [[1,0],[1,1]],                // 夜里
-    DOT: [[2,6]],                     // 点
-    ZHENG: [[2,7]],                   // 整
-    BAN: [[2,8]],                     // 半
-    YI15: [[2,9]], KE15: [[2,10]],    // 一刻
     H1: [[1,4]], H2: [[1,5]], H3: [[1,6]], H4: [[1,7]],
     H5: [[1,8]], H6: [[1,9]], H7: [[1,10]],
     H8: [[2,0]], H9: [[2,1]], H10: [[2,2]],
     H11: [[2,2],[2,3]], H12: [[2,4],[2,5]],
-    T20: [[3,0],[3,1]],               // 二十
-    T30: [[3,2],[3,3]],               // 三十
-    S3: [[3,2]], KE45: [[3,4]],       // 三刻
+    DOT: [[2,6]],                     // 点
+    ZHENG: [[2,7]],                   // 整
+    BAN: [[2,8]],                     // 半
+    YI: [[3,0]],                      // 一(一刻)
+    T20: [[3,1],[3,2]],               // 二十
+    T30: [[3,3],[3,4]],               // 三十
     T40: [[3,5],[3,6]],               // 四十
     T50: [[3,7],[3,8]],               // 五十
-    TEN1: [[3,8]],                    // 十(个位)
-    FIVE1: [[3,9]],                   // 五(个位)
-    FEN: [[3,10]]                     // 分
+    S3: [[3,3]],                      // 三(三刻)
+    KE: [[3,9]],                      // 刻
+    TEN1: [[4,0]],                    // 十(十分/十几)
+    O1: [[4,1]], O2: [[4,2]], O3: [[4,3]], O4: [[4,4]], O5: [[4,5]],
+    O6: [[4,6]], O7: [[4,7]], O8: [[4,8]], O9: [[4,9]],  // 个位一..九
+    FEN: [[5,0]]                      // 分
   };
 
   var grid = document.getElementById('grid');
@@ -333,7 +346,6 @@
   var debugToggle = document.getElementById('debugToggle');
   var secRow = document.getElementById('secRow');
   var secWords = document.getElementById('secWords');
-  var cdots = [0, 1, 2, 3].map(function (i) { return document.getElementById('cdot' + i); });
 
   var lang = 'zh';
   var precision = 5;      // 1 | 5 | 10 | 15
@@ -383,36 +395,60 @@
     }
   }
 
-  function enNames(h, m, prec) {
+  /* 分钟数 -> 英文词（1~59 全拼读） */
+  var EN_ONES = { 1: 'ONE_M', 2: 'TWO_M', 3: 'THREE_M', 4: 'FOUR_M', 5: 'FIVE_M',
+                  6: 'SIX_M', 7: 'SEVEN_M', 8: 'EIGHT_M', 9: 'NINE_M' };
+  var EN_TEENS = { 10: 'TEN_M', 11: 'ELEVEN_M', 12: 'TWELVE_M', 13: 'THIRTEEN_M',
+                   14: 'FOURTEEN_M', 15: 'FIFTEEN', 16: 'SIXTEEN_M',
+                   17: 'SEVENTEEN_M', 18: 'EIGHTEEN_M', 19: 'NINETEEN_M' };
+  var EN_TENS = { 2: 'TWENTY', 3: 'THIRTY', 4: 'FORTY', 5: 'FIFTY' };
+  var EN_HOURS = { 1: 'ONE_H', 2: 'TWO_H', 3: 'THREE_H', 4: 'FOUR_H', 5: 'FIVE_H', 6: 'SIX_H',
+                   7: 'SEVEN_H', 8: 'EIGHT_H', 9: 'NINE_H', 10: 'TEN_H', 11: 'ELEVEN_H', 12: 'TWELVE_H' };
+  function enMinuteWords(m) {
+    if (m < 10) return [EN_ONES[m]];
+    if (m < 20) return [EN_TEENS[m]];
+    var words = [EN_TENS[Math.floor(m / 10)]];
+    if (m % 10) words.push(EN_ONES[m % 10]);
+    return words;
+  }
+  function enNames(h, m) {
     var names = ['IT', 'IS'];
     if (m === 0) {
-      names.push('H' + h, 'OCLOCK');
+      names.push(EN_HOURS[h], 'OCLOCK');
       return names;
     }
-    var MIN;
-    if (prec === 10) {
-      MIN = { 10: ['TEN_M'], 20: ['TWENTY'], 30: ['THIRTY'], 40: ['TWENTY'], 50: ['TEN_M'] }[m];
-    } else if (prec === 15) {
-      MIN = { 15: ['FIFTEEN'], 30: ['THIRTY'], 45: ['FIFTEEN'] }[m];
-    } else {
-      MIN = {
-        5: ['FIVE_M'], 10: ['TEN_M'], 15: ['FIFTEEN'],
-        20: ['TWENTY'], 25: ['TWENTY', 'FIVE_M'], 30: ['THIRTY'],
-        35: ['TWENTY', 'FIVE_M'], 40: ['TWENTY'], 45: ['FIFTEEN'],
-        50: ['TEN_M'], 55: ['FIVE_M']
-      }[m];
-    }
-    names = names.concat(MIN);
-    if (m !== 30) names.push('MINUTES');
+    var mm = m <= 30 ? m : 60 - m;
+    names = names.concat(enMinuteWords(mm));
+    if (mm === 1) names.push('MINUTE');
+    else if (mm !== 30) names.push('MINUTES');
     if (m <= 30) {
-      names.push('PAST', 'H' + h);
+      names.push('PAST', EN_HOURS[h]);
     } else {
-      names.push('TO', 'H' + (h % 12 + 1));
+      names.push('TO', EN_HOURS[h % 12 + 1]);
     }
     return names;
   }
 
-  function zhNames(h24, m, prec) {
+  /* 分钟数 -> 中文词（1~59 全拼读） */
+  function zhMinuteWords(m) {
+    if (m === 0) return ['ZHENG'];
+    if (m === 30) return ['BAN'];
+    if (m === 15) return ['YI', 'KE'];   // 一刻
+    if (m === 45) return ['S3', 'KE'];   // 三刻
+    var names = [];
+    if (m >= 20) {
+      names.push({ 2: 'T20', 3: 'T30', 4: 'T40', 5: 'T50' }[Math.floor(m / 10)]);
+      if (m % 10) names.push('O' + (m % 10));
+    } else if (m >= 10) {
+      names.push('TEN1');
+      if (m % 10) names.push('O' + (m % 10));
+    } else {
+      names.push('O' + m);
+    }
+    names.push('FEN');
+    return names;
+  }
+  function zhNames(h24, m) {
     var names = ['PRE'];
     names.push(
       h24 <= 5 ? 'P0' :
@@ -422,83 +458,41 @@
       h24 <= 22 ? 'P4' : 'P5'
     );
     names.push('H' + (h24 % 12 || 12), 'DOT');
-    var MIN;
-    if (prec === 10) {
-      MIN = {
-        0: ['ZHENG'], 10: ['TEN1', 'FEN'], 20: ['T20', 'FEN'],
-        30: ['BAN'], 40: ['T40', 'FEN'], 50: ['T50', 'FEN']
-      }[m];
-    } else if (prec === 15) {
-      MIN = {
-        0: ['ZHENG'], 15: ['YI15', 'KE15'],
-        30: ['BAN'], 45: ['S3', 'KE45']
-      }[m];
-    } else {
-      MIN = {
-        0: ['ZHENG'],
-        5: ['FIVE1', 'FEN'],
-        10: ['TEN1', 'FEN'],
-        15: ['YI15', 'KE15'],      // 一刻
-        20: ['T20', 'FEN'],
-        25: ['T20', 'FIVE1', 'FEN'],
-        30: ['BAN'],               // 半
-        35: ['T30', 'FIVE1', 'FEN'],
-        40: ['T40', 'FEN'],
-        45: ['S3', 'KE45'],        // 三刻
-        50: ['T50', 'FEN'],
-        55: ['T50', 'FIVE1', 'FEN']
-      }[m];
-    }
-    return names.concat(MIN);
+    return names.concat(zhMinuteWords(m));
   }
 
   var lastKey = '';
   var simTime = null;   // 调试模式下的模拟时间
   var lastReal = 0;
   var debugOn = false;
-  var DEBUG_SPEED = 60; // 调试：1 真实秒 = 60 时钟秒
   function tick() {
     var realNow = new Date();
     var now;
     if (debugOn) {
+      /* 调试速度随精度变化：每真实秒走 1 个精度步长 */
+      var speed = precision * 60;
       if (!simTime) { simTime = new Date(realNow.getTime()); lastReal = realNow.getTime(); }
       var dt = realNow.getTime() - lastReal;
       lastReal = realNow.getTime();
-      simTime = new Date(simTime.getTime() + dt * DEBUG_SPEED);
+      simTime = new Date(simTime.getTime() + dt * speed);
       now = simTime;
     } else {
       now = realNow;
     }
     var totalMin = now.getHours() * 60 + now.getMinutes();
-    var h, m, dots = 0;
-    if (precision === 1) {
-      /* 1分钟模式：文字向下取整到5分钟，四角圆点补 +1~4 */
-      var base = Math.floor(totalMin / 5) * 5;
-      h = Math.floor(base / 60) % 24;
-      m = base % 60;
-      dots = totalMin - base;
-    } else {
-      var rounded = Math.round(totalMin / precision) * precision;
-      h = Math.floor(rounded / 60) % 24;
-      m = rounded % 60;
-    }
-    var key = lang + '|' + precision + '|' + h + '|' + m + '|' + dots;
+    var rounded = Math.round(totalMin / precision) * precision;
+    var h = Math.floor(rounded / 60) % 24;
+    var m = rounded % 60;
+    var key = lang + '|' + precision + '|' + h + '|' + m;
     if (key !== lastKey) {
       lastKey = key;
       if (lang === 'en') {
-        light(EN_WORDS, enNames(h % 12 || 12, m, precision));
+        light(EN_WORDS, enNames(h % 12 || 12, m));
       } else {
-        light(ZH_WORDS, zhNames(h, m, precision));
+        light(ZH_WORDS, zhNames(h, m));
       }
-      updateDots(dots);
     }
     if (showSeconds) updateSeconds(now);
-  }
-
-  function updateDots(n) {
-    for (var i = 0; i < 4; i++) {
-      cdots[i].classList.toggle('on', precision === 1 && i < n);
-    }
   }
 
   function updateSeconds(now) {
@@ -510,7 +504,7 @@
   function updateHint() {
     var zh = lang === 'zh';
     hint.textContent = {
-      1: zh ? '一分钟精度 · 角点为+1~4分' : '1-MINUTE PRECISION · DOTS +1-4',
+      1: zh ? '一分钟精度' : '1-MINUTE PRECISION',
       5: zh ? '五分钟精度' : '5-MINUTE PRECISION',
       10: zh ? '十分钟精度' : '10-MINUTE PRECISION',
       15: zh ? '十五分钟精度' : '15-MINUTE PRECISION'
@@ -551,6 +545,7 @@
   function setLang(next) {
     lang = next;
     document.documentElement.setAttribute('data-lang', next);
+    document.documentElement.style.setProperty('--rows', next === 'en' ? 24 : 6);
     buildGrid(next === 'en' ? EN_ROWS : ZH_ROWS);
     langZhBtn.classList.toggle('active', next === 'zh');
     langEnBtn.classList.toggle('active', next === 'en');
@@ -596,6 +591,7 @@
   /* 先建格子再设语言，避免 buildGrid 两次 */
   lang = savedLang;
   document.documentElement.setAttribute('data-lang', lang);
+  document.documentElement.style.setProperty('--rows', lang === 'en' ? 24 : 6);
   buildGrid(lang === 'en' ? EN_ROWS : ZH_ROWS);
   langZhBtn.classList.toggle('active', lang === 'zh');
   langEnBtn.classList.toggle('active', lang === 'en');
