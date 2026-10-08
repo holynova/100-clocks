@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<script
+  defer
+  src="https://cloud.umami.is/script.js"
+  data-website-id="e01c9f78-4607-4e60-b01c-77c8190b12b4"
+  data-domains="holynova.github.io"
+  data-exclude-search="true"
+  data-exclude-hash="true"
+></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Slider</title>
+<style>
+  :root {
+    /*  tile 尺寸：保证 6 位数字 + 冒号在小屏上不溢出  */
+    --t: clamp(8px, min(3.1vmin, (100vw - 32px) / 36.24), 26px);
+    --gap: calc(var(--t) * 0.18);
+    --pad: calc(var(--t) * 0.35);
+    --cgap: calc(var(--t) * 0.4);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 38%, #f4f4f4 0%, #e3e3e3 55%, #cdcdcd 100%);
+    font-family: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .nav {
+    position: fixed;
+    top: 16px; left: 20px; z-index: 10;
+    display: flex; gap: 18px;
+  }
+  .nav a {
+    color: rgba(20, 20, 20, 0.42);
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: color 0.2s;
+  }
+  .nav a:hover { color: rgba(20, 20, 20, 0.85); }
+  .nav .current { color: rgba(20, 20, 20, 0.85); cursor: default; }
+
+  .clock {
+    display: flex;
+    align-items: center;
+    gap: var(--cgap);
+    padding: 20px;
+  }
+
+  .digit {
+    background: linear-gradient(180deg, #181818, #0a0a0a);
+    border-radius: calc(var(--t) * 0.55);
+    padding: var(--pad);
+    box-shadow:
+      0 calc(var(--t) * 0.5) calc(var(--t) * 1.2) rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  .reel {
+    overflow: hidden;
+    height: calc(12 * (var(--t) + var(--gap)) - var(--gap));
+    border-radius: calc(var(--t) * 0.2);
+    background: #050505;
+  }
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(4, var(--t));
+    grid-auto-rows: var(--t);
+    gap: var(--gap);
+    will-change: transform;
+    transition: transform 0.55s cubic-bezier(0.55, 0.06, 0.35, 1);
+  }
+
+  .tile {
+    width: var(--t);
+    height: var(--t);
+    border-radius: 18%;
+    background: linear-gradient(145deg, #232323, #141414);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.07),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.5);
+  }
+  .tile.on {
+    background: linear-gradient(145deg, #ffb03a, #ff7d0d);
+    box-shadow:
+      0 0 calc(var(--t) * 0.45) rgba(255, 140, 20, 0.85),
+      0 0 calc(var(--t) * 0.12) rgba(255, 180, 60, 0.9),
+      inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  }
+
+  .colon {
+    display: grid;
+    grid-template-columns: var(--t);
+    grid-auto-rows: var(--t);
+    gap: var(--gap);
+    align-content: start;
+    padding: var(--pad) 0;
+  }
+  .colon .tile.on { animation: blink 1s steps(1) infinite; }
+  @keyframes blink {
+    0%, 60% { opacity: 1; }
+    61%, 100% { opacity: 0.25; }
+  }
+
+  @media (max-width: 480px) {
+    .nav { top: 14px; left: 14px; gap: 14px; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav" aria-label="其他时钟">
+    <a href="index.html">Matrix</a>
+    <a href="clock3.html">Sport</a>
+    <a href="word-clock.html">Word</a>
+    <span class="current">Slider</span>
+  </nav>
+
+  <main class="clock" aria-label="Time Slider">
+    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
+    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
+    <div class="colon" aria-hidden="true"></div>
+    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
+    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
+    <div class="colon" aria-hidden="true"></div>
+    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
+    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
+  </main>
+
+<script>
+(function () {
+  var COLS = 4;
+  var GLYPH_ROWS = 8;
+  var GAP_ROWS = 2;
+  var ROWS_PER_BLOCK = GLYPH_ROWS + GAP_ROWS; // 10
+  var BLOCKS = 11; // 0..9 + 0（无缝回卷）
+  var LEAD_ROWS = 2;
+
+  var GLYPHS = {
+    "0": ["XXXX","X..X","X..X","X..X","X..X","X..X","X..X","XXXX"],
+    "1": ["..X.",".XX.","..X.","..X.","..X.","..X.","..X.",".XXX"],
+    "2": ["XXXX","...X","...X","XXXX","X...","X...","X...","XXXX"],
+    "3": ["XXXX","...X","...X","XXXX","...X","...X","...X","XXXX"],
+    "4": ["X..X","X..X","X..X","XXXX","...X","...X","...X","...X"],
+    "5": ["XXXX","X...","X...","XXXX","...X","...X","...X","XXXX"],
+    "6": ["XXXX","X...","X...","XXXX","X..X","X..X","X..X","XXXX"],
+    "7": ["XXXX","...X","...X","..X.","..X.","..X.","..X.","..X."],
+    "8": ["XXXX","X..X","X..X","XXXX","X..X","X..X","X..X","XXXX"],
+    "9": ["XXXX","X..X","X..X","X..X","XXXX","...X","...X","XXXX"]
+  };
+
+  function darkTiles(n) {
+    var s = "";
+    for (var i = 0; i < n; i++) s += '<i class="tile"></i>';
+    return s;
+  }
+
+  var strips = [];
+  Array.prototype.forEach.call(document.querySelectorAll(".strip"), function (strip) {
+    var html = darkTiles(LEAD_ROWS * COLS);
+    for (var d = 0; d < BLOCKS; d++) {
+      var g = GLYPHS[String(d % 10)];
+      for (var r = 0; r < g.length; r++) {
+        for (var c = 0; c < COLS; c++) {
+          html += '<i class="tile' + (g[r][c] === "X" ? " on" : "") + '"></i>';
+        }
+      }
+      html += darkTiles((ROWS_PER_BLOCK - g.length) * COLS);
+    }
+    strip.innerHTML = html;
+    strip._p = 0;
+    strips.push(strip);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".colon"), function (col) {
+    var html = "";
+    for (var i = 0; i < 12; i++) {
+      html += '<i class="tile' + (i === 4 || i === 7 ? " on" : "") + '"></i>';
+    }
+    col.innerHTML = html;
+  });
+
+  var rowH = 0;
+  function measure() {
+    var tile = strips[0].querySelector(".tile");
+    var gap = parseFloat(getComputedStyle(strips[0]).rowGap) || 0;
+    rowH = tile.getBoundingClientRect().height + gap;
+  }
+
+  function render(strip, p) {
+    strip.style.transform = "translateY(" + (-p * ROWS_PER_BLOCK * rowH) + "px)";
+  }
+
+  function setDigit(idx, d) {
+    var strip = strips[idx];
+    var p = strip._p;
+    if (p === 10) {
+      // 影子 0 与真 0 显示一致，无缝归位
+      strip.style.transition = "none";
+      p = 0; strip._p = 0;
+      render(strip, 0);
+      void strip.offsetHeight;
+      strip.style.transition = "";
+    }
+    var cands = (d === 0) ? [0, 10] : [d];
+    var best = cands[0], bd = 1e9;
+    for (var i = 0; i < cands.length; i++) {
+      var dist = Math.abs(cands[i] - p);
+      if (dist < bd) { bd = dist; best = cands[i]; }
+    }
+    strip._p = best;
+    render(strip, best);
+  }
+
+  function tick() {
+    var n = new Date();
+    function pad(v) { return ("0" + v).slice(-2); }
+    var s = pad(n.getHours()) + pad(n.getMinutes()) + pad(n.getSeconds());
+    for (var i = 0; i < 6; i++) setDigit(i, +s[i]);
+  }
+
+  measure();
+  tick(); // 初次从 0 滑到当前时间
+  setInterval(tick, 250);
+
+  var rT;
+  window.addEventListener("resize", function () {
+    clearTimeout(rT);
+    rT = setTimeout(function () {
+      measure();
+      strips.forEach(function (s) { render(s, s._p); });
+    }, 150);
+  });
+})();
+</script>
+</body>
+</html>
