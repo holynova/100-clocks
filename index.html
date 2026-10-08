@@ -90,7 +90,7 @@
         body {
             margin: 0;
             padding: 0;
-            height: 100vh;
+            height: 100dvh;
             width: 100vw;
             display: flex;
             justify-content: center;
@@ -262,16 +262,22 @@
             transform: rotate(90deg);
         }
 
-        .clock-link {
+        .nav {
             position: absolute;
             top: 20px;
             left: 20px;
             z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav a {
             color: #777;
             text-decoration: none;
             font-size: 0.78rem;
             letter-spacing: 1px;
             text-transform: uppercase;
+            white-space: nowrap;
             border: 1px solid #333;
             border-radius: 4px;
             padding: 7px 10px;
@@ -279,7 +285,7 @@
             transition: color 0.2s, border-color 0.2s, background 0.2s;
         }
 
-        .clock-link:hover {
+        .nav a:hover {
             color: var(--text-active);
             border-color: var(--text-active);
             background: rgba(0, 0, 0, 0.58);
@@ -428,6 +434,8 @@
         @media (max-width: 480px) {
             :root { --cell-size: 28px; --gap-size: 6px; }
             .clock-container { padding: 30px 20px; }
+            .nav { top: 14px; left: 14px; gap: 8px; }
+            .nav a { font-size: 0.68rem; padding: 6px 8px; }
             .settings-panel { right: 50%; transform: translateX(50%) translateY(-10px); top: 10%; }
             .settings-panel.open { transform: translateX(50%) translateY(0); }
         }
@@ -438,8 +446,10 @@
 </head>
 <body>
 
-    <a class="clock-link" href="clock3.html">Sport Watch</a>
-    <a class="clock-link" href="word-clock.html" style="left: 148px;">Word Clock</a>
+    <nav class="nav">
+        <a href="clock3.html">Sport Watch</a>
+        <a href="word-clock.html">Word Clock</a>
+    </nav>
     <div class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙</div>
 
     <div class="settings-panel" id="settingsPanel">

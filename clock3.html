@@ -32,7 +32,7 @@
         }
 
         body {
-            min-height: 100vh;
+            min-height: 100dvh;
             margin: 0;
             display: grid;
             place-items: center;
@@ -477,12 +477,39 @@
 
         @media (max-width: 520px) {
             :root {
-                --watch-size: min(94vw, 430px);
+                --watch-size: min(94vw, 430px, 94dvh);
             }
+        }
+
+        .nav {
+            position: fixed;
+            top: 16px;
+            left: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 18px;
+        }
+
+        .nav a {
+            color: rgba(20, 20, 20, 0.42);
+            text-decoration: none;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav a:hover {
+            color: rgba(20, 20, 20, 0.85);
         }
     </style>
 </head>
 <body>
+    <nav class="nav" aria-label="其他时钟">
+        <a href="index.html">Matrix</a>
+        <a href="word-clock.html">Word</a>
+    </nav>
     <main class="watch" aria-label="Square matrix watch">
         <section class="face">
             <div class="top-panel">
