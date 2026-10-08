@@ -14,26 +14,24 @@
 <title>Time Slider</title>
 <style>
   :root {
-    /*  tile 尺寸：保证 6 位数字 + 冒号在小屏上不溢出  */
-    --t: clamp(8px, min(3.1vmin, (100vw - 32px) / 36.24), 26px);
-    --gap: calc(var(--t) * 0.18);
-    --pad: calc(var(--t) * 0.35);
-    --cgap: calc(var(--t) * 0.4);
+    --t: clamp(10px, 2.6vmin, 20px);
+    --gap: calc(var(--t) * 0.14);
+    --row: calc(var(--t) + var(--gap));
+    /* 橙色背光（钟面行）位于视口约 36% 高度处 */
+    --digit-top: calc(36dvh - var(--row) * 5);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body {
     min-height: 100dvh;
-    display: grid;
-    place-items: center;
     overflow: hidden;
-    background: radial-gradient(circle at 50% 38%, #f4f4f4 0%, #e3e3e3 55%, #cdcdcd 100%);
+    background: radial-gradient(circle at 50% 32%, #f3f3f3 0%, #e1e1e1 55%, #cccccc 100%);
     font-family: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   }
 
   .nav {
     position: fixed;
-    top: 16px; left: 20px; z-index: 10;
+    top: 16px; left: 20px; z-index: 50;
     display: flex; gap: 18px;
   }
   .nav a {
@@ -48,65 +46,87 @@
   .nav a:hover { color: rgba(20, 20, 20, 0.85); }
   .nav .current { color: rgba(20, 20, 20, 0.85); cursor: default; }
 
+  /* 机身横梁 */
+  .band {
+    position: fixed;
+    left: 0; right: 0; z-index: 1;
+    top: calc(var(--digit-top) - var(--row) * 2);
+    height: calc(var(--row) * 9 - var(--gap));
+    background: linear-gradient(180deg, #3b3e3e 0%, #2b2d2d 60%, #232525 100%);
+    box-shadow: 0 calc(var(--t) * 0.35) calc(var(--t) * 1.1) rgba(0, 0, 0, 0.28);
+  }
+
   .clock {
+    position: relative;
+    z-index: 2;
     display: flex;
-    align-items: center;
-    gap: var(--cgap);
-    padding: 20px;
+    align-items: flex-start;
+    justify-content: center;
+    gap: calc(var(--t) * 1.1);
+    margin-top: var(--digit-top);
   }
 
   .digit {
-    background: linear-gradient(180deg, #181818, #0a0a0a);
-    border-radius: calc(var(--t) * 0.55);
-    padding: var(--pad);
-    box-shadow:
-      0 calc(var(--t) * 0.5) calc(var(--t) * 1.2) rgba(0, 0, 0, 0.28),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-  .reel {
-    overflow: hidden;
-    height: calc(12 * (var(--t) + var(--gap)) - var(--gap));
-    border-radius: calc(var(--t) * 0.2);
-    background: #050505;
-  }
-  .strip {
-    display: grid;
-    grid-template-columns: repeat(4, var(--t));
-    grid-auto-rows: var(--t);
-    gap: var(--gap);
-    will-change: transform;
-    transition: transform 0.55s cubic-bezier(0.55, 0.06, 0.35, 1);
+    position: relative;
+    width: calc(var(--t) * 3 + var(--gap) * 2);
+    height: calc(var(--row) * 60 - var(--gap));
   }
 
-  .tile {
+  /* 橙色背光：固定不动 */
+  .backlight {
+    position: absolute;
+    z-index: 1;
+    top: calc(var(--row) * 5);
+    left: 0;
+    width: calc(var(--t) * 3 + var(--gap) * 2);
+    height: calc(var(--row) * 5 - var(--gap));
+    background: radial-gradient(circle at 50% 38%, #f28a2e 0%, #e56f16 55%, #cc5c0d 100%);
+    box-shadow: 0 0 calc(var(--t) * 1.2) rgba(229, 111, 22, 0.55);
+    border-radius: 2px;
+  }
+
+  /* 网格板：高条，上下滑动 */
+  .strip {
+    position: absolute;
+    top: 0;
+    display: grid;
+    grid-template-columns: repeat(2, var(--t));
+    grid-auto-rows: var(--t);
+    gap: var(--gap);
+    background: #0d0d0d;
+    padding: calc(var(--gap) / 2);
+    border-radius: 3px;
+    box-shadow:
+      calc(var(--t) * 0.22) calc(var(--t) * 0.3) calc(var(--t) * 0.55) rgba(0, 0, 0, 0.22);
+    will-change: transform;
+    transition: transform 0.9s cubic-bezier(0.6, 0.04, 0.3, 1);
+  }
+  .strip-l { left: 0; z-index: 3; }
+  .strip-r { left: calc(var(--t) + var(--gap)); z-index: 2; transition-delay: 0.14s; }
+
+  .cell {
     width: var(--t);
     height: var(--t);
-    border-radius: 18%;
-    background: linear-gradient(145deg, #232323, #141414);
-    box-shadow:
-      inset 0 1px 1px rgba(255, 255, 255, 0.07),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.5);
+    border-radius: 1.5px;
   }
-  .tile.on {
-    background: linear-gradient(145deg, #ffb03a, #ff7d0d);
-    box-shadow:
-      0 0 calc(var(--t) * 0.45) rgba(255, 140, 20, 0.85),
-      0 0 calc(var(--t) * 0.12) rgba(255, 180, 60, 0.9),
-      inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  .cell.closed {
+    background: #161616;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
   }
+  .cell.open { background: transparent; }
 
   .colon {
     display: grid;
-    grid-template-columns: var(--t);
-    grid-auto-rows: var(--t);
-    gap: var(--gap);
-    align-content: start;
-    padding: var(--pad) 0;
+    grid-template-rows: repeat(2, var(--t));
+    gap: calc(var(--row) * 1.6);
+    margin-top: calc(var(--row) * 5 + var(--row) * 1.2);
   }
-  .colon .tile.on { animation: blink 1s steps(1) infinite; }
-  @keyframes blink {
-    0%, 60% { opacity: 1; }
-    61%, 100% { opacity: 0.25; }
+  .colon i {
+    width: var(--t);
+    height: var(--t);
+    border-radius: 2px;
+    background: radial-gradient(circle at 50% 38%, #f28a2e 0%, #d05f0e 100%);
+    box-shadow: 0 0 calc(var(--t) * 0.7) rgba(229, 111, 22, 0.6);
   }
 
   @media (max-width: 480px) {
@@ -122,119 +142,121 @@
     <span class="current">Slider</span>
   </nav>
 
+  <div class="band" aria-hidden="true"></div>
+
   <main class="clock" aria-label="Time Slider">
-    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
-    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
-    <div class="colon" aria-hidden="true"></div>
-    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
-    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
-    <div class="colon" aria-hidden="true"></div>
-    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
-    <div class="digit"><div class="reel"><div class="strip"></div></div></div>
+    <div class="digit" data-i="0">
+      <div class="backlight"></div>
+      <div class="strip strip-r"></div>
+      <div class="strip strip-l"></div>
+    </div>
+    <div class="digit" data-i="1">
+      <div class="backlight"></div>
+      <div class="strip strip-r"></div>
+      <div class="strip strip-l"></div>
+    </div>
+    <div class="colon" aria-hidden="true"><i></i><i></i></div>
+    <div class="digit" data-i="2">
+      <div class="backlight"></div>
+      <div class="strip strip-r"></div>
+      <div class="strip strip-l"></div>
+    </div>
+    <div class="digit" data-i="3">
+      <div class="backlight"></div>
+      <div class="strip strip-r"></div>
+      <div class="strip strip-l"></div>
+    </div>
   </main>
 
 <script>
 (function () {
-  var COLS = 4;
-  var GLYPH_ROWS = 8;
-  var GAP_ROWS = 2;
-  var ROWS_PER_BLOCK = GLYPH_ROWS + GAP_ROWS; // 10
-  var BLOCKS = 11; // 0..9 + 0（无缝回卷）
-  var LEAD_ROWS = 2;
+  "use strict";
 
-  var GLYPHS = {
-    "0": ["XXXX","X..X","X..X","X..X","X..X","X..X","X..X","XXXX"],
-    "1": ["..X.",".XX.","..X.","..X.","..X.","..X.","..X.",".XXX"],
-    "2": ["XXXX","...X","...X","XXXX","X...","X...","X...","XXXX"],
-    "3": ["XXXX","...X","...X","XXXX","...X","...X","...X","XXXX"],
-    "4": ["X..X","X..X","X..X","XXXX","...X","...X","...X","...X"],
-    "5": ["XXXX","X...","X...","XXXX","...X","...X","...X","XXXX"],
-    "6": ["XXXX","X...","X...","XXXX","X..X","X..X","X..X","XXXX"],
-    "7": ["XXXX","...X","...X","..X.","..X.","..X.","..X.","..X."],
-    "8": ["XXXX","X..X","X..X","XXXX","X..X","X..X","X..X","XXXX"],
-    "9": ["XXXX","X..X","X..X","X..X","XXXX","...X","...X","XXXX"]
+  /* 数字网格：3 列 × 5 行，与实物照片完全一致（0/2/4/6 逐格读取，其余同风格补齐） */
+  var DIGITS = {
+    "0": ["OOO", "O.O", "O.O", "O.O", "OOO"],
+    "1": ["..O", "..O", "..O", "..O", "..O"],
+    "2": ["OOO", "..O", "OOO", "O..", "OOO"],
+    "3": ["OOO", "..O", "OOO", "..O", "OOO"],
+    "4": ["O.O", "O.O", "OOO", "..O", "..O"],
+    "5": ["OOO", "O..", "OOO", "..O", "OOO"],
+    "6": ["OOO", "O..", "OOO", "O.O", "OOO"],
+    "7": ["OOO", "..O", "..O", "..O", "..O"],
+    "8": ["OOO", "O.O", "OOO", "O.O", "OOO"],
+    "9": ["OOO", "O.O", "OOO", "..O", "OOO"]
   };
 
-  function darkTiles(n) {
-    var s = "";
-    for (var i = 0; i < n; i++) s += '<i class="tile"></i>';
-    return s;
+  var ROWS = 5;        // 每帧行数
+  var FRAMES = 10;     // 0-9
+  var LEAD_L = 5;      // 左板前导黑行
+  var LEAD_R = 8;      // 右板前导黑行（比左板低 3 行，还原照片里的错位）
+  var TRAIL = 5;
+  var R_OFFSET = LEAD_R - LEAD_L; // 3
+
+  /* 每位数字两块网格板：左板取数字第 1-2 列，右板取第 2-3 列 */
+  function buildStrip(el, colIdx, lead) {
+    var total = lead + FRAMES * ROWS + TRAIL;
+    var html = "";
+    for (var r = 0; r < total; r++) {
+      var d = -1, fr = 0;
+      if (r >= lead && r < lead + FRAMES * ROWS) {
+        d = Math.floor((r - lead) / ROWS);
+        fr = (r - lead) % ROWS;
+      }
+      for (var c = 0; c < 2; c++) {
+        var open = d >= 0 && DIGITS[String(d)][fr][colIdx[c]] === "O";
+        html += '<i class="cell' + (open ? " open" : " closed") + '"></i>';
+      }
+    }
+    el.innerHTML = html;
   }
 
-  var strips = [];
-  Array.prototype.forEach.call(document.querySelectorAll(".strip"), function (strip) {
-    var html = darkTiles(LEAD_ROWS * COLS);
-    for (var d = 0; d < BLOCKS; d++) {
-      var g = GLYPHS[String(d % 10)];
-      for (var r = 0; r < g.length; r++) {
-        for (var c = 0; c < COLS; c++) {
-          html += '<i class="tile' + (g[r][c] === "X" ? " on" : "") + '"></i>';
-        }
-      }
-      html += darkTiles((ROWS_PER_BLOCK - g.length) * COLS);
-    }
-    strip.innerHTML = html;
-    strip._p = 0;
-    strips.push(strip);
-  });
-
-  Array.prototype.forEach.call(document.querySelectorAll(".colon"), function (col) {
-    var html = "";
-    for (var i = 0; i < 12; i++) {
-      html += '<i class="tile' + (i === 4 || i === 7 ? " on" : "") + '"></i>';
-    }
-    col.innerHTML = html;
+  var digits = Array.prototype.slice.call(document.querySelectorAll(".digit"));
+  var stripsL = [], stripsR = [];
+  digits.forEach(function (dig) {
+    var l = dig.querySelector(".strip-l");
+    var r = dig.querySelector(".strip-r");
+    buildStrip(l, [0, 1], LEAD_L);
+    buildStrip(r, [1, 2], LEAD_R);
+    stripsL.push(l);
+    stripsR.push(r);
   });
 
   var rowH = 0;
   function measure() {
-    var tile = strips[0].querySelector(".tile");
-    var gap = parseFloat(getComputedStyle(strips[0]).rowGap) || 0;
-    rowH = tile.getBoundingClientRect().height + gap;
+    var cell = stripsL[0].querySelector(".cell");
+    var gap = parseFloat(getComputedStyle(stripsL[0]).rowGap) || 0;
+    rowH = cell.getBoundingClientRect().height + gap;
   }
 
-  function render(strip, p) {
-    strip.style.transform = "translateY(" + (-p * ROWS_PER_BLOCK * rowH) + "px)";
+  function setDigit(i, d) {
+    stripsL[i].style.transform = "translateY(" + (-d * ROWS * rowH) + "px)";
+    stripsR[i].style.transform = "translateY(" + (-(d * ROWS + R_OFFSET) * rowH) + "px)";
   }
 
-  function setDigit(idx, d) {
-    var strip = strips[idx];
-    var p = strip._p;
-    if (p === 10) {
-      // 影子 0 与真 0 显示一致，无缝归位
-      strip.style.transition = "none";
-      p = 0; strip._p = 0;
-      render(strip, 0);
-      void strip.offsetHeight;
-      strip.style.transition = "";
-    }
-    var cands = (d === 0) ? [0, 10] : [d];
-    var best = cands[0], bd = 1e9;
-    for (var i = 0; i < cands.length; i++) {
-      var dist = Math.abs(cands[i] - p);
-      if (dist < bd) { bd = dist; best = cands[i]; }
-    }
-    strip._p = best;
-    render(strip, best);
-  }
-
+  var lastMin = -1;
   function tick() {
     var n = new Date();
-    function pad(v) { return ("0" + v).slice(-2); }
-    var s = pad(n.getHours()) + pad(n.getMinutes()) + pad(n.getSeconds());
-    for (var i = 0; i < 6; i++) setDigit(i, +s[i]);
+    var hh = ("0" + n.getHours()).slice(-2);
+    var mm = ("0" + n.getMinutes()).slice(-2);
+    var key = hh + mm;
+    if (key === lastMin) return;
+    lastMin = key;
+    var s = hh + mm;
+    for (var i = 0; i < 4; i++) setDigit(i, +s[i]);
   }
 
   measure();
-  tick(); // 初次从 0 滑到当前时间
-  setInterval(tick, 250);
+  tick(); // 初次从 0 位滑到当前时间
+  setInterval(tick, 1000);
 
   var rT;
   window.addEventListener("resize", function () {
     clearTimeout(rT);
     rT = setTimeout(function () {
       measure();
-      strips.forEach(function (s) { render(s, s._p); });
+      lastMin = -1;
+      tick();
     }, 150);
   });
 })();
