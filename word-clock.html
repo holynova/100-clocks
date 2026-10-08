@@ -41,34 +41,61 @@
     overflow: hidden;
   }
 
-  /* 顶部导航 / 工具条：极简 */
-  .nav {
+  /* 右上角菜单按钮：页面只留时钟，选项收进菜单 */
+  .menu-btn {
     position: fixed;
-    top: 18px;
-    left: 22px;
-    display: flex;
-    gap: 14px;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    z-index: 10;
-  }
-  .nav a {
+    top: 14px; right: 18px; z-index: 60;
+    width: 40px; height: 40px;
+    border: 1px solid var(--hair); border-radius: 12px;
+    background: rgba(18,18,22,.72);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
     color: var(--faint);
-    text-decoration: none;
-    transition: color .2s;
+    font-size: 17px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: color .2s, border-color .2s;
+    padding: 0;
   }
-  .nav a:hover { color: var(--c); }
-  .nav .current { color: var(--c); cursor: default; }
+  .menu-btn:hover, .menu-btn.active { color: var(--c); border-color: var(--c); }
 
-  .tools {
+  .menu {
     position: fixed;
-    top: 14px;
-    right: 18px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
+    top: 62px; right: 18px; z-index: 60;
+    width: 248px;
+    max-height: calc(100dvh - 90px);
+    overflow-y: auto;
+    background: rgba(13,13,16,.94);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border: 1px solid var(--hair);
+    border-radius: 16px;
+    padding: 4px 18px 12px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.65);
+    opacity: 0; pointer-events: none;
+    transform: translateY(-8px) scale(.98);
+    transform-origin: top right;
+    transition: opacity .22s, transform .22s;
   }
+  .menu.open { opacity: 1; pointer-events: auto; transform: none; }
+  .menu-section { padding: 13px 0; border-bottom: 1px solid var(--hair); }
+  .menu-section:last-child { border-bottom: none; padding-bottom: 6px; }
+  .menu-label {
+    font-size: 11px; letter-spacing: 2px; color: var(--faint);
+    margin-bottom: 10px; white-space: nowrap;
+  }
+  .menu .seg { width: 100%; }
+  .menu .seg button { flex: 1; padding: 8px 2px; white-space: nowrap; }
+  .menu .dots { padding: 2px 0; gap: 12px; }
+  .menu .dot { width: 22px; height: 22px; }
+  .menu-toggles { display: flex; gap: 8px; }
+  .menu-toggles .pill { flex: 1; white-space: nowrap; }
+  .menu-links { display: flex; gap: 16px; align-items: center; }
+  .menu-links a {
+    color: var(--faint); text-decoration: none;
+    font-size: 13px; letter-spacing: 1px; text-transform: uppercase;
+    transition: color .2s; white-space: nowrap;
+  }
+  .menu-links a:hover { color: var(--c); }
+  .menu-links .current { color: var(--c); font-size: 13px; letter-spacing: 1px; }
   .seg {
     display: flex;
     border: 1px solid var(--hair);
@@ -159,12 +186,7 @@
   }
   html[data-lang="zh"] .sec-words { letter-spacing: 9px; text-indent: 9px; }
 
-  /* 底部控制条：精度 + 读秒开关 */
-  .controls {
-    position: fixed;
-    bottom: 18px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 10px; align-items: center; z-index: 10;
-  }
+  /* 开关 pill（菜单内使用） */
   .pill {
     appearance: none; border: 1px solid var(--hair); border-radius: 999px;
     background: transparent; color: var(--faint);
@@ -175,30 +197,59 @@
   .pill:not(.active):hover { color: var(--c); border-color: var(--faint); }
 
   @media (max-width: 480px) {
-    .nav { left: 16px; top: 14px; gap: 10px; }
-    .tools { right: 12px; top: 10px; }
+    .menu-btn { right: 12px; top: 12px; }
+    .menu { top: 60px; left: 12px; right: 12px; width: auto; }
+    .hint { font-size: 10px; letter-spacing: 2px; }
+    .sec-words { font-size: 12px; letter-spacing: 3px; text-indent: 3px; }
+    html[data-lang="zh"] .sec-words { letter-spacing: 5px; text-indent: 5px; }
   }
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <a href="index.html">Matrix</a>
-  <a href="clock3.html">Sport</a>
-  <span class="current">Word</span>
-</nav>
+<button class="menu-btn" id="menuBtn" aria-label="菜单">☰</button>
 
-<div class="tools">
-  <div class="seg">
-    <button id="langZh" class="active">中文</button>
-    <button id="langEn">EN</button>
+<div class="menu" id="menu">
+  <div class="menu-section">
+    <div class="menu-label">语言 Language</div>
+    <div class="seg">
+      <button id="langZh" class="active">中文</button>
+      <button id="langEn">EN</button>
+    </div>
   </div>
-  <div class="dots" id="themeDots" title="切换主题">
-    <div class="dot" data-t="amber" title="琥珀"></div>
-    <div class="dot" data-t="green" title="荧光绿"></div>
-    <div class="dot" data-t="blue" title="冰蓝"></div>
-    <div class="dot" data-t="red" title="霓虹红"></div>
-    <div class="dot" data-t="white" title="月白"></div>
+  <div class="menu-section">
+    <div class="menu-label">主题 Theme</div>
+    <div class="dots" id="themeDots">
+      <div class="dot" data-t="amber" title="琥珀"></div>
+      <div class="dot" data-t="green" title="荧光绿"></div>
+      <div class="dot" data-t="blue" title="冰蓝"></div>
+      <div class="dot" data-t="red" title="霓虹红"></div>
+      <div class="dot" data-t="white" title="月白"></div>
+    </div>
+  </div>
+  <div class="menu-section">
+    <div class="menu-label">精度 Precision</div>
+    <div class="seg" id="precSeg">
+      <button data-p="1">1分</button>
+      <button data-p="5" class="active">5分</button>
+      <button data-p="10">10分</button>
+      <button data-p="15">15分</button>
+    </div>
+  </div>
+  <div class="menu-section">
+    <div class="menu-label">功能</div>
+    <div class="menu-toggles">
+      <button class="pill" id="secToggle">读秒 关</button>
+      <button class="pill" id="debugToggle">调试 关</button>
+    </div>
+  </div>
+  <div class="menu-section">
+    <div class="menu-label">其他时钟</div>
+    <div class="menu-links">
+      <a href="index.html">Matrix</a>
+      <a href="clock3.html">Sport</a>
+      <span class="current">Word</span>
+    </div>
   </div>
 </div>
 
@@ -208,17 +259,6 @@
   <div class="sec" id="secRow" hidden>
     <div class="sec-words" id="secWords"></div>
   </div>
-</div>
-
-<div class="controls">
-  <div class="seg" id="precSeg">
-    <button data-p="1">1分</button>
-    <button data-p="5" class="active">5分</button>
-    <button data-p="10">10分</button>
-    <button data-p="15">15分</button>
-  </div>
-  <button class="pill" id="secToggle">读秒 关</button>
-  <button class="pill" id="debugToggle">调试 关</button>
 </div>
 
 <script>
@@ -563,6 +603,23 @@
     });
     try { localStorage.setItem('wordclock-theme', next); } catch (e) {}
   }
+
+  var menuBtn = document.getElementById('menuBtn');
+  var menu = document.getElementById('menu');
+  function setMenu(open) {
+    menu.classList.toggle('open', open);
+    menuBtn.classList.toggle('active', open);
+  }
+  menuBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    setMenu(!menu.classList.contains('open'));
+  });
+  document.addEventListener('click', function (e) {
+    if (menu.classList.contains('open') && !menu.contains(e.target)) setMenu(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') setMenu(false);
+  });
 
   langZhBtn.addEventListener('click', function () { setLang('zh'); });
   langEnBtn.addEventListener('click', function () { setLang('en'); });
