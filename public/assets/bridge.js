@@ -6,10 +6,10 @@ if(preview&&/^\d{2}:\d{2}:\d{2}$/.test(previewTime||'')){const parts=previewTime
 function now(){return mode==='live'?NativeDate.now():epoch+(performance.now()-anchor)*rate;}
 function ClockDate(...args){if(!new.target)return new NativeDate(now()).toString();return Reflect.construct(NativeDate,args.length?args:[now()],new.target);}
 Object.setPrototypeOf(ClockDate,NativeDate);ClockDate.prototype=NativeDate.prototype;ClockDate.now=now;window.Date=ClockDate;
-window.ClockTime={now, get mode(){return mode;}};
+window.ClockTime={now, get mode(){return mode;},get rate(){return rate;}};
 function notify(type,extra={}){if(embedded)parent.postMessage({type,...extra},location.origin);}
 window.addEventListener('message',e=>{if(!embedded||e.source!==parent||e.origin!==location.origin)return;const d=e.data;
- if(d?.type==='clock-config'&&['live','demo'].includes(d.mode)&&Number.isFinite(d.epoch)&&[1,20].includes(d.rate)){mode=d.mode;epoch=d.epoch;anchor=performance.now();rate=d.rate;window.dispatchEvent(new Event('clock:change'));}
+ if(d?.type==='clock-config'&&['live','demo'].includes(d.mode)&&Number.isFinite(d.epoch)&&Number.isFinite(d.rate)&&d.rate>=0&&d.rate<=3600){mode=d.mode;epoch=d.epoch;anchor=performance.now();rate=d.rate;window.dispatchEvent(new Event('clock:change'));}
  if(d?.type==='clock-action'){if(d.action==='settings')(document.getElementById('menuButton')||document.getElementById('menuBtn')||document.getElementById('settingsBtn'))?.click();if(d.action==='dance')window.dispatchEvent(new Event('clock:dance'));}
 });
 if(embedded||preview)document.documentElement.classList.add('embedded');

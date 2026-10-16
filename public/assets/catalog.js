@@ -1,5 +1,5 @@
 export const clocks=[
-{id:'kinetic',name:'指针矩阵',en:'Kinetic matrix',category:'mechanical',tag:'216 个小表盘',desc:'216 个小表盘，432 根独立的指针。相邻指针沿数字内外两侧连接，拼出双线轮廓；空白处的指针也缓缓变换，等待下一次排列。',source:'视频参考 · 双线轮廓重写',bg:'#dedbd3'},
+{id:'kinetic',name:'指针矩阵',en:'Kinetic matrix',category:'mechanical',tag:'240 个小表盘',desc:'默认 240 个小表盘，开启秒数后为 360 个。相邻指针沿数字内外两侧连接，拼出双线轮廓；空白处的指针也缓缓变换，等待下一次排列。',source:'视频参考 · 双线轮廓重写',bg:'#dedbd3'},
 {id:'slider-column',name:'分列滑轨',en:'Column rails',category:'mechanical',tag:'每一列，独立滑行',desc:'把数字拆成三列，每列都有一条固定的镂空轨道。轨道上下滑动，在背光窗口交汇成此刻。保留秒数、主题和快进测试。',source:'合并自 time-slider-clock',bg:'#c6c4c5',settings:true},
 {id:'slider-whole',name:'整位滑轨',en:'Whole-digit rails',category:'mechanical',tag:'一整位数字的旅行',desc:'每一位数字共用一张连续的固定遮罩。不是切换图案，而是让整张栅格沿轨道平移，找到下一位数字的位置。',source:'合并自 time-slider-clock',bg:'#c6c4c5',settings:true},
 {id:'slider-dual',name:'原作双轨',en:'Original dual rails',category:'mechanical',tag:'两片遮罩，一位数字',desc:'依据 Hans Andersson 的 Time Slider 原作遮罩与位置表，一条单列轨道和一条双列轨道独立移动，组合出完整数字。衍生几何遵循 CC BY-NC-SA 4.0。',source:'Hans Andersson · 保留作者署名',bg:'#c6c4c5',settings:true},

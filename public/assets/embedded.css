@@ -1,0 +1,12 @@
+.embedded body{margin:0;overflow:hidden;min-height:100svh}
+.embedded .menu-trigger,.embedded .menu-btn,.embedded .settings-btn,.embedded .versions,.embedded #letterForm,.embedded #settingsPanel,.embedded #menu{display:none!important}
+.embedded .stage{padding:82px 18px 24px!important;min-height:100svh!important;height:100svh!important;box-sizing:border-box}
+.embedded .clock{max-height:calc(100svh - 110px)!important}
+.embedded .clock-container{max-height:calc(100svh - 100px);margin-top:48px}
+@media(max-height:500px){.embedded .stage{padding:64px 12px 12px!important}.embedded .clock{max-height:calc(100svh - 80px)!important}.embedded .clock-container{margin-top:42px}}
+.embedded .clock-container{max-height:none;margin:0;position:absolute;left:50%;top:calc(50% + 24px);translate:-50% -50%}
+.embedded[data-lang]{--size:min(92vw,620px,calc((100dvh - 160px)*11/var(--rows)))}
+.embedded[data-lang] .hint{width:max-content;max-width:90vw;white-space:nowrap;align-self:center}
+.embedded[data-lang] .sec{min-width:min(90vw,320px);align-self:center}
+.embedded[data-lang] .stage{width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:72px 16px 24px!important}
+.embedded[data-lang] .grid{width:calc(var(--size)*.9);flex-shrink:0}
