@@ -1,0 +1,275 @@
+[
+  {
+    "name": "指针矩阵",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "bounds": {
+      "bottom": 487.9921875,
+      "left": 78.796875,
+      "right": 241.1953125,
+      "top": 82
+    }
+  },
+  {
+    "name": "整位滑轨",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "bounds": {
+      "bottom": 542,
+      "left": 18,
+      "right": 302,
+      "top": 84
+    }
+  },
+  {
+    "name": "原作双轨",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "bounds": {
+      "bottom": 542,
+      "left": 18,
+      "right": 302,
+      "top": 84
+    }
+  },
+  {
+    "name": "字母滑轨",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "bounds": {
+      "bottom": 523.2421875,
+      "left": 18,
+      "right": 302,
+      "top": 102.75
+    }
+  },
+  {
+    "name": "数字矩阵",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "bounds": {
+      "bottom": 521.09765625,
+      "left": 72,
+      "right": 248,
+      "top": 94.90234375
+    }
+  },
+  {
+    "name": "中文文字时钟",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "bounds": {
+      "bottom": 355.71875,
+      "left": 27.5234375,
+      "right": 292.4765625,
+      "top": 204.2578125
+    }
+  },
+  {
+    "name": "英文文字时钟",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "bounds": {
+      "bottom": 470.21875,
+      "left": 75.8515625,
+      "right": 244.1484375,
+      "top": 99.8984375
+    }
+  },
+  {
+    "name": "指针矩阵",
+    "size": {
+      "width": 375,
+      "height": 812
+    },
+    "bounds": {
+      "bottom": 732,
+      "left": 57.5,
+      "right": 317.5,
+      "top": 82
+    }
+  },
+  {
+    "name": "整位滑轨",
+    "size": {
+      "width": 375,
+      "height": 812
+    },
+    "bounds": {
+      "bottom": 786,
+      "left": 18,
+      "right": 357,
+      "top": 84
+    }
+  },
+  {
+    "name": "原作双轨",
+    "size": {
+      "width": 375,
+      "height": 812
+    },
+    "bounds": {
+      "bottom": 786,
+      "left": 18,
+      "right": 357,
+      "top": 84
+    }
+  },
+  {
+    "name": "字母滑轨",
+    "size": {
+      "width": 375,
+      "height": 812
+    },
+    "bounds": {
+      "bottom": 685.9609375,
+      "left": 18,
+      "right": 357,
+      "top": 184.03125
+    }
+  },
+  {
+    "name": "数字矩阵",
+    "size": {
+      "width": 375,
+      "height": 812
+    },
+    "bounds": {
+      "bottom": 678.09765625,
+      "left": 85.5,
+      "right": 289.5,
+      "top": 181.90234375
+    }
+  },
+  {
+    "name": "中文文字时钟",
+    "size": {
+      "width": 375,
+      "height": 812
+    },
+    "bounds": {
+      "bottom": 488.59375,
+      "left": 32.25,
+      "right": 342.75,
+      "top": 311.078125
+    }
+  },
+  {
+    "name": "英文文字时钟",
+    "size": {
+      "width": 375,
+      "height": 812
+    },
+    "bounds": {
+      "bottom": 698.2421875,
+      "left": 53.0234375,
+      "right": 321.96875,
+      "top": 106.359375
+    }
+  },
+  {
+    "name": "指针矩阵",
+    "size": {
+      "width": 812,
+      "height": 375
+    },
+    "bounds": {
+      "bottom": 295.828125,
+      "left": 16,
+      "right": 796,
+      "top": 79.1640625
+    }
+  },
+  {
+    "name": "整位滑轨",
+    "size": {
+      "width": 812,
+      "height": 375
+    },
+    "bounds": {
+      "bottom": 361,
+      "left": 12,
+      "right": 800,
+      "top": 66
+    }
+  },
+  {
+    "name": "原作双轨",
+    "size": {
+      "width": 812,
+      "height": 375
+    },
+    "bounds": {
+      "bottom": 361,
+      "left": 12,
+      "right": 800,
+      "top": 66
+    }
+  },
+  {
+    "name": "字母滑轨",
+    "size": {
+      "width": 812,
+      "height": 375
+    },
+    "bounds": {
+      "bottom": 361,
+      "left": 12,
+      "right": 800,
+      "top": 66
+    }
+  },
+  {
+    "name": "数字矩阵",
+    "size": {
+      "width": 812,
+      "height": 375
+    },
+    "bounds": {
+      "bottom": 344.0414733886719,
+      "left": 348.24359130859375,
+      "right": 463.75640869140625,
+      "top": 78.95852661132812
+    }
+  },
+  {
+    "name": "中文文字时钟",
+    "size": {
+      "width": 812,
+      "height": 375
+    },
+    "bounds": {
+      "bottom": 278.375,
+      "left": 228.625,
+      "right": 583.375,
+      "top": 75.625
+    }
+  },
+  {
+    "name": "英文文字时钟",
+    "size": {
+      "width": 812,
+      "height": 375
+    },
+    "bounds": {
+      "bottom": 287.875,
+      "left": 361.65625,
+      "right": 450.34375,
+      "top": 92.75
+    }
+  }
+]

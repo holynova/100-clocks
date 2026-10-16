@@ -3,3 +3,5 @@
 html,body{height:100%;overflow:hidden}#instrument,.embedded #instrument{padding:84px 24px 32px;height:100svh;flex:none}.matrix-canvas{width:min(100%,calc((100svh - 116px)*var(--matrix-aspect,2.4)));aspect-ratio:var(--matrix-aspect,2.4);box-shadow:none;background:transparent;border-radius:0}@media(max-width:600px){#instrument,.embedded #instrument{padding:82px 16px 24px}.matrix-canvas{width:min(100%,calc((100svh - 106px)*var(--matrix-aspect,2.4)));box-shadow:none}}@media(max-height:500px){#instrument,.embedded #instrument{padding:64px 16px 12px}.matrix-canvas{width:min(100%,calc((100svh - 76px)*var(--matrix-aspect,2.4)))}}
 
 body{background:#dedbd3}
+/* Keep the assembly action clear of the last row on short phones. */
+#instrument,.embedded #instrument{padding-bottom:80px}.matrix-canvas{width:min(100%,calc((100svh - 164px)*var(--matrix-aspect,3.6)))}@media(max-width:600px){.matrix-canvas{width:min(100%,calc((100svh - 162px)*var(--matrix-aspect,3.6)))}}@media(max-height:500px){#instrument,.embedded #instrument{padding-bottom:64px}.matrix-canvas{width:min(100%,calc((100svh - 128px)*var(--matrix-aspect,3.6)))}}

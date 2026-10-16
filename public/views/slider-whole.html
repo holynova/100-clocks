@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN">
-<head><script src="../assets/bridge.js?v=2.2.4"></script>
+<head><script src="../assets/bridge.js?v=2.3.0"></script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#c6c4c5">
 <title>Time Slider · 整位滑轨时钟</title><meta name="description" content="时间在黑白滑轨之间流动。每个数字由一条完整滑轨呈现的实时机械时钟。">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23262929'/%3E%3Cpath d='M8 7h16v18H8z' fill='%23e96723'/%3E%3Cpath d='M12 11h8v10h-8z' fill='%23262929'/%3E%3C/svg%3E">
@@ -25,7 +25,7 @@ body{color:var(--text);background:var(--bg)}.page{background:radial-gradient(ell
 :root[data-theme="graphite"],:root[data-theme="amber"],:root[data-theme="oled"]{--lattice-opacity:.5}
 #emission,#colon{filter:var(--digit-glow)}.lattice-lines{filter:var(--lattice-glow)}.digit-emission{display:none}:root:not([data-theme="classic"]) .digit-emission{display:inline}
 .versions{display:grid;grid-template-columns:1fr 1fr;border-radius:14px}.versions a{border-radius:10px;line-height:34px}
-</style><style>.embedded .menu-trigger,.embedded .versions{display:none}.embedded .stage{padding:16px}.embedded .clock,.embedded .clock.seconds-visible{height:calc(100svh - 32px)}.embedded .settings{z-index:10}.standalone-back{position:fixed;left:20px;top:20px;z-index:3;font-size:12px;color:var(--text);text-decoration:none}.release-version{display:none}.embedded .letter-form{max-width:340px}.embedded #letterForm input{color:var(--text)}.embedded .letter-form~*{flex-shrink:0}.embedded #settings .full{margin-bottom:8px}button:active{transform:scale(.96)}@media(max-width:600px){.embedded .stage{padding:10px}.embedded .clock,.embedded .clock.seconds-visible{height:calc(100svh - 20px)}.embedded .letter-form{margin-top:0}.embedded .clock[style*="--view-ratio"]{height:auto;max-height:calc(100svh - 150px)}}</style><link rel="stylesheet" href="../assets/embedded.css?v=2.2.4"><script defer src="../assets/options.js?v=2.2.4"></script></head>
+</style><style>.embedded .menu-trigger,.embedded .versions{display:none}.embedded .stage{padding:16px}.embedded .clock,.embedded .clock.seconds-visible{height:calc(100svh - 32px)}.embedded .settings{z-index:10}.standalone-back{position:fixed;left:20px;top:20px;z-index:3;font-size:12px;color:var(--text);text-decoration:none}.release-version{display:none}.embedded .letter-form{max-width:340px}.embedded #letterForm input{color:var(--text)}.embedded .letter-form~*{flex-shrink:0}.embedded #settings .full{margin-bottom:8px}button:active{transform:scale(.96)}@media(max-width:600px){.embedded .stage{padding:10px}.embedded .clock,.embedded .clock.seconds-visible{height:calc(100svh - 20px)}.embedded .letter-form{margin-top:0}.embedded .clock[style*="--view-ratio"]{height:auto;max-height:calc(100svh - 150px)}}</style><link rel="stylesheet" href="../assets/embedded.css?v=2.3.0"><script defer src="../assets/options.js?v=2.3.0"></script></head>
 <body><main class="page">
 <button class="menu-trigger" id="menuButton" aria-label="打开设置" aria-haspopup="dialog" aria-controls="settings" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 <section class="stage" aria-label="滑轨时钟"><svg class="clock" id="clock" viewBox="90 -238 527 1095" role="img" aria-labelledby="clockTitle"><title id="clockTitle">实时滑轨时钟</title><defs>
@@ -48,7 +48,8 @@ function shortestTape(patterns){const p=[...new Set(patterns)],n=p.length,dp=Arr
 function el(name,attrs,parent){const e=document.createElementNS(NS,name);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);parent.append(e);return e;}
 const tapes=[],cell=23,starts=[135,237,373,475,611,713];
 // All positions use the very same physical mask, including the restricted tens positions.
-const sharedRows='0'+shortestTape(digits.map((_,n)=>digitRows(n)))+'0';
+// Precomputed once from shortestTape; regression tests verify the same physical mask.
+const sharedRows='07475757174717175557111110';
 const railOffsets=digits.map((_,n)=>sharedRows.indexOf(digitRows(n)));
 const railTop=252-Math.max(...railOffsets)*cell-2;
 const railBottom=252-Math.min(...railOffsets)*cell+sharedRows.length*cell+2;
@@ -101,6 +102,7 @@ function cancelIntro(){
  $('clock').dataset.phase='live';updateMotion();
 }
 function startIntro(){
+ if(typeof document!=='undefined'&&document.documentElement.classList.contains('embedded')){$('clock').dataset.phase='live';tick(true);return;}
  if(matchMedia('(prefers-reduced-motion: reduce)').matches){$('clock').dataset.phase='live';tick(true);return;}
  introActive=true;
  $('clock').dataset.phase='zero';
@@ -148,4 +150,4 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!settings.open&&doc
 document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'退出全屏':'全屏显示';});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 $('startTime').value=formatTime(new Date(),true);$('startTime').required=true;updateSeconds();startIntro();setInterval(()=>tick(),100);
-</script><script>window.addEventListener('clock:change',()=>{const live=document.getElementById('live');if(live&&live.getAttribute('aria-pressed')!=='true')live.click();});</script></body></html>
+</script><script>window.addEventListener('clock:change',()=>{const live=document.getElementById('live');if(live&&live.getAttribute('aria-pressed')!=='true')live.click();});</script><script>requestAnimationFrame(()=>window.ClockTime.ready());</script></body></html>

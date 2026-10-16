@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="amber" data-lang="zh">
-<head><script src="../assets/bridge.js?v=2.2.4"></script>
+<head><script src="../assets/bridge.js?v=2.3.0"></script>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -197,7 +197,7 @@
     html[data-lang="zh"] .sec-words { letter-spacing: 5px; text-indent: 5px; }
   }
 </style>
-<style id="collection-adapter">.standalone-back{position:fixed;left:18px;top:18px;color:inherit;font:11px system-ui;text-decoration:none;z-index:100}.sr-only{position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);overflow:hidden}.embedded .settings-btn,.embedded .menu-btn{display:none}.embedded .settings-panel{top:14px;max-height:calc(100svh - 28px);overflow:auto}.embedded .settings-panel.open{transform:none}.embedded .menu-links{display:none}</style><link rel="stylesheet" href="../assets/embedded.css?v=2.2.4"><script defer src="../assets/options.js?v=2.2.4"></script></head>
+<style id="collection-adapter">.standalone-back{position:fixed;left:18px;top:18px;color:inherit;font:11px system-ui;text-decoration:none;z-index:100}.sr-only{position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);overflow:hidden}.embedded .settings-btn,.embedded .menu-btn{display:none}.embedded .settings-panel{top:14px;max-height:calc(100svh - 28px);overflow:auto}.embedded .settings-panel.open{transform:none}.embedded .menu-links{display:none}</style><link rel="stylesheet" href="../assets/embedded.css?v=2.3.0"><script defer src="../assets/options.js?v=2.3.0"></script></head>
 <body><time id="legacy-clock-time" class="sr-only"></time>
 
 <button class="menu-btn" id="menuBtn" aria-label="菜单">☰</button>
@@ -580,6 +580,7 @@
   function setLang(next) {
     lang = next;
     document.documentElement.setAttribute('data-lang', next);
+    document.documentElement.lang = next === 'en' ? 'en' : 'zh-CN';
     document.documentElement.style.setProperty('--rows', next === 'en' ? 24 : 6);
     buildGrid(next === 'en' ? EN_ROWS : ZH_ROWS);
     langZhBtn.classList.toggle('active', next === 'zh');
@@ -641,8 +642,9 @@
 
   setTheme(savedTheme);
   /* 先建格子再设语言，避免 buildGrid 两次 */
-  lang = savedLang;
+  lang = ['zh','en'].includes(new URLSearchParams(location.search).get('lang'))?new URLSearchParams(location.search).get('lang'):savedLang;
   document.documentElement.setAttribute('data-lang', lang);
+  document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
   document.documentElement.style.setProperty('--rows', lang === 'en' ? 24 : 6);
   buildGrid(lang === 'en' ? EN_ROWS : ZH_ROWS);
   langZhBtn.classList.toggle('active', lang === 'zh');

@@ -16,11 +16,13 @@ assert(js.includes('const rows=sharedRows'),'Every digit must use the same mask'
 assert(!js.includes('const range=d==='),'No digit-specific mask layouts');
 assert(!js.includes('data-column'),'No individually moving columns');
 assert(js.includes('t.rows.indexOf(digitRows(numbers[t.d]))'));
+const precomputed=js.match(/const sharedRows='([0-7]+)'/)[1];
 const pure=js.slice(0,js.indexOf('function el('));
 vm.runInNewContext(pure+`
 const ranges=[[0,1,2],[0,1,2,3,4,5,6,7,8,9],[0,1,2,3,4,5],[0,1,2,3,4,5,6,7,8,9],[0,1,2,3,4,5],[0,1,2,3,4,5,6,7,8,9]];
 for(const digit of digits)for(let i=0;i<15;i++)if(digit[i]==='1')assert.equal(digits[8][i],'1','All digits must fit the fixed 8-shaped backing');
 const sharedRows='0'+shortestTape(digits.map((_,n)=>digitRows(n)))+'0';
+assert.equal(sharedRows,precomputed,'Precomputed production mask must match the generator');
 const tapes=ranges.map(()=>sharedRows);
 const offsets=digits.map((_,n)=>sharedRows.indexOf(digitRows(n)));
 const top=252-Math.max(...offsets)*23-2-28;
@@ -36,5 +38,5 @@ for(let second=0;second<86400;second++){
   for(let r=0;r<5;r++)for(let c=0;c<3;c++)assert.equal(String((Number(tapes[d][offset+r])>>(2-c))&1),digits[values[d]][r*3+c]);
  }
 }
-`,{assert});
+`,{assert,precomputed});
 console.log('PASS: 86,400 whole-digit readings, all three columns share one position; identical masks, complete bounds at every position; original column mask geometry preserved');
