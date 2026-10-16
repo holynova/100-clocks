@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-16",
+  "collection": {
+    "all": 7,
+    "mechanical": 5,
+    "digital": 2
+  },
+  "retained": [
+    "kinetic",
+    "slider-column",
+    "slider-whole",
+    "slider-dual",
+    "alphabet",
+    "number-matrix",
+    "word"
+  ],
+  "restoredOriginalCss": [
+    "number-matrix",
+    "word"
+  ],
+  "finalMobile": [
+    {
+      "id": "kinetic",
+      "outer": {
+        "scrollW": 360,
+        "w": 375
+      },
+      "child": {
+        "h": 446,
+        "scrollH": 446,
+        "scrollW": 322,
+        "w": 322
+      }
+    },
+    {
+      "id": "number-matrix",
+      "outer": {
+        "scrollW": 360,
+        "w": 375
+      },
+      "child": {
+        "h": 446,
+        "scrollH": 446,
+        "scrollW": 322,
+        "w": 322
+      }
+    },
+    {
+      "id": "word",
+      "outer": {
+        "scrollW": 360,
+        "w": 375
+      },
+      "child": {
+        "h": 446,
+        "scrollH": 446,
+        "scrollW": 322,
+        "w": 322
+      }
+    }
+  ],
+  "performance": {
+    "before": {
+      "renderer": "DOM",
+      "frames": 12,
+      "fps": 5,
+      "meanJsMs": 0.675,
+      "p95FrameMs": 366,
+      "styleWritesPerFrame": 432,
+      "complete": true
+    },
+    "after": {
+      "renderer": "Canvas 2D",
+      "frames": 95,
+      "fps": 59,
+      "meanJsMs": 0.157,
+      "p95FrameMs": 17.6,
+      "styleWritesPerFrame": 0,
+      "complete": true
+    }
+  },
+  "interactions": [
+    "filters",
+    "previous/next",
+    "real-time/demo",
+    "fullscreen",
+    "original 06 settings",
+    "original 07 language and seconds",
+    "rail settings and seconds",
+    "alphabet valid/invalid input"
+  ],
+  "images": "actual Chrome screenshots"
+}

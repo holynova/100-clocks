@@ -1,0 +1,9 @@
+{
+  "renderer": "Canvas 2D",
+  "frames": 95,
+  "fps": 59,
+  "meanJsMs": 0.157,
+  "p95FrameMs": 17.6,
+  "styleWritesPerFrame": 0,
+  "complete": true
+}

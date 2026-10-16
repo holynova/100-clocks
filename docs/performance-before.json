@@ -1,0 +1,9 @@
+{
+  "renderer": "DOM",
+  "frames": 12,
+  "fps": 5,
+  "meanJsMs": 0.675,
+  "p95FrameMs": 366,
+  "styleWritesPerFrame": 432,
+  "complete": true
+}

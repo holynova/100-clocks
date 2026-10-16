@@ -1,0 +1,26 @@
+{
+  "slider-column": {
+    "source": "holynova/time-slider-clock",
+    "commit": "8b3de0a9b14764ed76fa4ea234fd7128e909e357",
+    "path": "dist/index.html",
+    "sha256": "6f820d4d7d37c8ff0c48430fc6495a36bc297e242dc2d214e265b070720840c4"
+  },
+  "slider-whole": {
+    "source": "holynova/time-slider-clock",
+    "commit": "8b3de0a9b14764ed76fa4ea234fd7128e909e357",
+    "path": "dist/whole-digit/index.html",
+    "sha256": "aa8216cca304afb58f99fba1a4b8c00448c00b9c9245c379eeced293d2559c39"
+  },
+  "slider-dual": {
+    "source": "holynova/time-slider-clock",
+    "commit": "8b3de0a9b14764ed76fa4ea234fd7128e909e357",
+    "path": "dist/hardware/index.html",
+    "sha256": "e7394eb6dd0741534d8a2d970bdb3ecf1593d07811f63dbebdce427095c992d7"
+  },
+  "alphabet": {
+    "source": "holynova/time-slider-clock",
+    "commit": "8b3de0a9b14764ed76fa4ea234fd7128e909e357",
+    "path": "dist/matrix/index.html",
+    "sha256": "8b5b97808c79e180eaaa17d4f7eafaba750bf37ef8600337f73737e72c7fe240"
+  }
+}

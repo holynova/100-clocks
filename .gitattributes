@@ -1,0 +1,3 @@
+# Preserve the original clocks' stylesheet bytes, including imported trailing spaces.
+public/views/number-matrix.html whitespace=-blank-at-eol
+public/views/word.html whitespace=-blank-at-eol

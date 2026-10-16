@@ -1,0 +1,16 @@
+{
+  "name": "100-clocks",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "十一款可交互的网页时钟，一个统一的时间实验室",
+  "scripts": {
+    "dev": "python3 -m http.server 4179 --directory public",
+    "build": "node scripts/build.mjs",
+    "check": "node --test tests/*.test.mjs && node scripts/check.mjs && node scripts/check-rails.mjs && node scripts/dom-check.mjs",
+    "deploy": "npm run build && npx wrangler@4.128.0 deploy"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  }
+}
