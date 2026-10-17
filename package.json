@@ -1,6 +1,6 @@
 {
   "name": "100-clocks",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "private": true,
   "type": "module",
   "description": "七款可交互的网页时钟，一个统一的时间实验室",

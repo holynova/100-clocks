@@ -13,6 +13,7 @@ window.addEventListener('message',e=>{if(!embedded||e.source!==parent||e.origin!
  if(d?.type==='clock-config'&&['live','demo'].includes(d.mode)&&Number.isFinite(d.epoch)&&Number.isFinite(d.rate)&&d.rate>=0&&d.rate<=3600){mode=d.mode;epoch=d.epoch;anchor=performance.now();rate=d.rate;window.dispatchEvent(new Event('clock:change'));}
  if(d?.type==='clock-action'){if(d.action==='settings')(document.getElementById('menuButton')||document.getElementById('menuBtn')||document.getElementById('settingsBtn'))?.click();if(d.action==='dance')window.dispatchEvent(new Event('clock:dance'));if(d.action==='assemble')window.dispatchEvent(new Event('clock:assemble'));}
 });
+window.addEventListener('clock:dance-change',e=>notify('clock-dance',e.detail));
 if(embedded||preview)document.documentElement.classList.add('embedded');
 window.addEventListener('error',()=>notify('clock-error'));
 document.addEventListener('DOMContentLoaded',()=>{for(const id of ['menuBtn','settingsBtn']){const b=document.getElementById(id);if(b){b.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';b.setAttribute('aria-label','时钟设置');}}if(!embedded&&!preview){const a=document.createElement('a');a.href='../';a.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="vertical-align:middle;margin-right:6px"><path d="m10 5-7 7 7 7M3 12h18"/></svg>100 Clocks';a.className='standalone-back';document.body.append(a);}ready();});
