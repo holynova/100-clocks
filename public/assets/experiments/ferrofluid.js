@@ -5,7 +5,7 @@ export function createFerrofluid(env){
  const nodes=Array.from({length:340},()=>({x:120+rnd()*760,y:465+rnd()*15,vx:0,vy:0,tx:0,ty:0}));let key='',seconds=false,interactive=true,tone='ink',pointer=null,scatterUntil=0;
  const options=[{key:'seconds',label:'显示秒数',type:'toggle',value:false},{key:'tone',label:'液体颜色',type:'select',value:'ink',choices:[['ink','墨黑'],['ocean','深海']]},{key:'interaction',label:'磁场互动',type:'toggle',value:true},{key:'scatter',label:'扰动磁场',type:'button'}];
  function setTargets(d,force){const next=timeText(d,seconds);if(next===key&&!force)return false;key=next;const points=samplePaths(timePaths(next,{x:105,y:125,width:790,height:seconds?180:205}),8);nodes.forEach((n,i)=>{const p=points[Math.floor(i*points.length/nodes.length)%points.length];n.tx=p[0];n.ty=p[1];if(env.preview||env.reduced){n.x=n.tx;n.y=n.ty;n.vx=n.vy=0;}});return true;}
- function scatter(){scatterUntil=performance.now()+650;for(const n of nodes){n.vx=(rnd()-.5)*450;n.vy=180+rnd()*100;}env.phase('磁场正在重新聚合');env.wake();}
+ function scatter(){if(env.preview||env.reduced)return;scatterUntil=performance.now()+650;for(const n of nodes){n.vx=(rnd()-.5)*450;n.vy=180+rnd()*100;}env.phase('磁场正在重新聚合');env.wake();}
  function render(t,dt){
   const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#eeece4');bg.addColorStop(1,'#dddccf');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
   const moving=!env.preview&&!env.reduced,ink=tone==='ink'?[16,23,22]:[17,42,55];f.clearRect(0,0,500,250);f.globalCompositeOperation='lighter';
@@ -21,5 +21,5 @@ export function createFerrofluid(env){
   for(let i=0;i<17;i++){ctx.beginPath();ctx.arc(60+i*57,458+Math.sin(i*4+(moving?t*.0007:0))*4,3+i%4,0,Math.PI*2);ctx.fill();}
   if(t-scatterUntil>1200)env.phase('轻触液面，扰动磁场');return moving;
  }
- return {options,render,update:(d,t,force)=>setTargets(d,force),replay:scatter,pointer(type,p){if(type==='leave'||type==='up')pointer=null;else if(interactive)pointer=p;if(type==='down')env.phase('松开后，液体会重新聚合');},setOption(k,v){if(k==='seconds'){seconds=v;setTargets(env.date(),true);}if(k==='tone')tone=v;if(k==='interaction'){interactive=v;pointer=null;}if(k==='scatter')scatter();}};
+ return {options,render,update:(d,t,force)=>setTargets(d,force),replay:scatter,pointer(type,p){if(type==='leave'||type==='up')pointer=null;else if(interactive)pointer=p;if(type==='down')scatter();},setOption(k,v){if(k==='seconds'){seconds=v;setTargets(env.date(),true);}if(k==='tone')tone=v;if(k==='interaction'){interactive=v;pointer=null;}if(k==='scatter')scatter();}};
 }
