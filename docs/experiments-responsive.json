@@ -1,0 +1,190 @@
+[
+  {
+    "id": "plotclock",
+    "width": 320,
+    "height": 568,
+    "canvas": {
+      "height": 187,
+      "width": 292,
+      "x": 14,
+      "y": 192.5
+    },
+    "captionBottom": 415.5,
+    "clientWidth": 320,
+    "ready": "true",
+    "scrollWidth": 320,
+    "viewportHeight": 568
+  },
+  {
+    "id": "ferrofluid",
+    "width": 320,
+    "height": 568,
+    "canvas": {
+      "height": 136,
+      "width": 282,
+      "x": 19,
+      "y": 218
+    },
+    "captionBottom": 395,
+    "clientWidth": 320,
+    "ready": "true",
+    "scrollWidth": 320,
+    "viewportHeight": 568
+  },
+  {
+    "id": "moire",
+    "width": 320,
+    "height": 568,
+    "canvas": {
+      "height": 292,
+      "width": 292,
+      "x": 14,
+      "y": 140
+    },
+    "captionBottom": 468,
+    "clientWidth": 320,
+    "ready": "true",
+    "scrollWidth": 320,
+    "viewportHeight": 568
+  },
+  {
+    "id": "sand",
+    "width": 320,
+    "height": 568,
+    "canvas": {
+      "height": 167.359375,
+      "width": 290,
+      "x": 15,
+      "y": 202.3203125
+    },
+    "captionBottom": 406.6796875,
+    "clientWidth": 320,
+    "ready": "true",
+    "scrollWidth": 320,
+    "viewportHeight": 568
+  },
+  {
+    "id": "plotclock",
+    "width": 812,
+    "height": 375,
+    "canvas": {
+      "height": 265.0390625,
+      "width": 414.0625,
+      "x": 198.96875,
+      "y": 61.984375
+    },
+    "captionBottom": 353.0234375,
+    "clientWidth": 812,
+    "ready": "true",
+    "scrollWidth": 812,
+    "viewportHeight": 375
+  },
+  {
+    "id": "ferrofluid",
+    "width": 812,
+    "height": 375,
+    "canvas": {
+      "height": 247,
+      "width": 512,
+      "x": 150,
+      "y": 71
+    },
+    "captionBottom": 353,
+    "clientWidth": 812,
+    "ready": "true",
+    "scrollWidth": 812,
+    "viewportHeight": 375
+  },
+  {
+    "id": "moire",
+    "width": 812,
+    "height": 375,
+    "canvas": {
+      "height": 265,
+      "width": 265,
+      "x": 273.5,
+      "y": 62
+    },
+    "captionBottom": 353,
+    "clientWidth": 812,
+    "ready": "true",
+    "scrollWidth": 812,
+    "viewportHeight": 375
+  },
+  {
+    "id": "sand",
+    "width": 812,
+    "height": 375,
+    "canvas": {
+      "height": 262.9921875,
+      "width": 454.890625,
+      "x": 178.5546875,
+      "y": 63.0078125
+    },
+    "captionBottom": 353,
+    "clientWidth": 812,
+    "ready": "true",
+    "scrollWidth": 812,
+    "viewportHeight": 375
+  },
+  {
+    "id": "plotclock",
+    "width": 375,
+    "height": 812,
+    "canvas": {
+      "height": 222.078125,
+      "width": 347,
+      "x": 14,
+      "y": 296.9609375
+    },
+    "captionBottom": 555.0390625,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "viewportHeight": 812
+  },
+  {
+    "id": "ferrofluid",
+    "width": 375,
+    "height": 812,
+    "canvas": {
+      "height": 163.5,
+      "width": 337,
+      "x": 19,
+      "y": 326.25
+    },
+    "captionBottom": 530.75,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "viewportHeight": 812
+  },
+  {
+    "id": "moire",
+    "width": 375,
+    "height": 812,
+    "canvas": {
+      "height": 347,
+      "width": 347,
+      "x": 14,
+      "y": 234.5
+    },
+    "captionBottom": 617.5,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "viewportHeight": 812
+  },
+  {
+    "id": "sand",
+    "width": 375,
+    "height": 812,
+    "canvas": {
+      "height": 199.2578125,
+      "width": 345,
+      "x": 15,
+      "y": 308.3671875
+    },
+    "captionBottom": 544.625,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "viewportHeight": 812
+  }
+]

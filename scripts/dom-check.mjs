@@ -1,10 +1,12 @@
 import {JSDOM,VirtualConsole} from 'jsdom';import {readFile,writeFile,mkdir} from 'node:fs/promises';import assert from 'node:assert/strict';import {clocks} from '../public/assets/catalog.js';
 const native=(await readFile('public/assets/native.js','utf8')).replace(/^import .*?;\n/gm,'');const algorithms=(await readFile('public/assets/algorithms.js','utf8')).replaceAll('export ','');const bridge=await readFile('public/assets/bridge.js','utf8');const reports=[];
+const experimentSource=(await Promise.all(['math','draw','plotclock','ferrofluid','moire','sand','runtime'].map(n=>readFile('public/assets/experiments/'+n+'.js','utf8')))).map(s=>s.replace(/^import .*?;\n/gm,'').replaceAll('export ','')).join('\n');
 for(const c of clocks){
  const errors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));const html=await readFile('public/'+c.href.split('?')[0],'utf8');const dom=new JSDOM(html,{url:'http://localhost:4179/'+c.href+(c.href.includes('?')?'&':'?')+'preview&at=23:59:59',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;
- w.createProfiler=()=>({start(){},frame(){}});w.ResizeObserver=class{observe(){}};w.HTMLCanvasElement.prototype.getContext=()=>({});w.matchMedia=q=>({matches:q.includes('prefers-reduced-motion'),addEventListener(){},removeEventListener(){}});w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+ w.createProfiler=()=>({start(){},frame(){}});w.ResizeObserver=class{observe(){}};w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}}),getImageData:(x,y,w,h)=>({data:new Uint8ClampedArray(w*h*4)})},{get:(o,k)=>k in o?o[k]:(()=>{}),set:(o,k,v)=>(o[k]=v,true)});w.matchMedia=q=>({matches:q.includes('prefers-reduced-motion'),addEventListener(){},removeEventListener(){}});w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
  try{
   w.eval(bridge);for(const s of dom.window.document.querySelectorAll('script:not([src])'))if(s.type!=='module')w.eval(s.textContent);
+  if(html.includes('../assets/experiments/runtime.js'))w.eval(experimentSource);
   if(html.includes('../assets/native.js'))w.eval(algorithms+'\n'+native);
   w.document.dispatchEvent(new w.Event('DOMContentLoaded'));await new Promise(r=>setTimeout(r,30));
   assert(!errors.length,`${c.id}: ${errors.join('; ')}`);const time=w.document.getElementById('clock-time')||w.document.getElementById('accessibleTime')||w.document.getElementById('legacy-clock-time');

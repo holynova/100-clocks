@@ -5,3 +5,10 @@ Original design license: Creative Commons Attribution-NonCommercial-ShareAlike 4
 https://creativecommons.org/licenses/by-nc-sa/4.0/
 
 This page adapts the perforation geometry of L1–L4 and R1–R3, the 0–9 position tables from timeslider.ino, and the visible fixed grid/guard layout. Those adaptations are shared under the same CC BY-NC-SA 4.0 license. We added a six-digit seconds display, responsive SVG rendering, web animation, themes and testing controls. This is a web interpretation, not the original Arduino program or a dimensionally exact manufacturing model.
+
+New original web interpretations (v3.0.0):
+08 Plot clock — inspired by 9a / Plotclock, https://github.com/9a/plotclock
+09 Ferrofluid — inspired by Zelf Koelman / Ferrolic, https://www.ferrolic.com/
+10 Moire clock — optical barrier-grid variation inspired by STATION Design (Felix Cooper and Amber Li), https://stationdesign.co/moire-clock
+11 Sand clock — digit-stencil variation inspired by PanduTechLab / Sand Clock, https://github.com/PanduTechLab/Sand-Clock-
+These implementations use independently authored drawing paths and browser code; they do not embed the original artwork, hardware source code or media. See docs/experiments.md for interpretation boundaries.

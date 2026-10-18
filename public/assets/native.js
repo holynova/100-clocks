@@ -1,5 +1,5 @@
-import {pad,formatTime,matrixTargets,matrixLayout,danceEffects,danceAngles,angleDelta} from './algorithms.js?v=2.4.0';
-import {createProfiler} from './profiler.js?v=2.4.0';
+import {pad,formatTime,matrixTargets,matrixLayout,danceEffects,danceAngles,angleDelta} from './algorithms.js?v=3.0.0';
+import {createProfiler} from './profiler.js?v=3.0.0';
 const root=document.getElementById('instrument'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
 root.innerHTML='<canvas class="matrix-canvas" id="matrix-canvas" role="img" aria-label="360 个小表盘组成的双线时间"></canvas>';
 const canvas=root.firstElementChild,ctx=canvas.getContext('2d',{alpha:false}),background=document.createElement('canvas'),back=background.getContext('2d',{alpha:false});
