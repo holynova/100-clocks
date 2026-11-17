@@ -1,53 +1,98 @@
-# 100 Clocks · 时间实验室
+<p align="center">
+  <img src="./assets/readme/hero.svg" width="100%" alt="100 Clocks · 时间实验室 — 时间，不止一种走法：指针矩阵示意，9×5 个小表盘拼出数字 10">
+</p>
 
-时间，不止一种走法。目前收录 **11 款**网页时钟，100 是逐步填满的目标。
+<p align="center">
+  <a href="https://100-clocks.xiaosang.cc/">▶ 在线体验 Try Online</a>
+  ·
+  <a href="https://holynova.github.io/100-clocks/">GitHub Pages 镜像</a>
+  ·
+  <a href="https://github.com/holynova/100-clocks">GitHub 仓库</a>
+</p>
 
-[在线体验](https://100-clocks.xiaosang.cc/) · [指针矩阵](https://100-clocks.xiaosang.cc/?clock=kinetic) · [逐款检查](docs/audit.md) · [性能对比](docs/performance.md)
+100 Clocks 是一个时间实验室：目前收录 **11 款**可交互网页时钟，100 是逐步填满的目标。指针矩阵用 360 个小表盘拼出时间，滑轨让数字沿轨道旅行，文字时钟用汉字读出此刻，磁流体、莫尔纹与沙漏让时间有了物质与光学形态。点选任意一款进入全屏沉浸展示。
 
-![指针矩阵](public/previews/kinetic.jpg)
+100 Clocks is a time laboratory: 11 interactive web clocks so far, with 100 as the goal to grow toward. A kinetic matrix spells the time with 360 dials; rails let digits travel; word clocks read the time in Chinese or English; ferrofluid, moiré, and sand give time a material form. Click any clock for a fullscreen immersive view.
 
-| 编号 | 时钟 | 实现 |
+## 截图 / Screenshots
+
+<p align="center">
+  <img src="./assets/readme/screenshot-collection.png" width="760" alt="集合页：时间，不止一种走法，11 款时钟，分类为机械与运动、数字与文字、物质与光学">
+</p>
+
+<p align="center">
+  <img src="./assets/readme/screenshot-kinetic.png" width="760" alt="指针矩阵沉浸视图：360 个小表盘拼出 08:20:32，空白表盘指针整齐朝上">
+</p>
+
+## 11 款时钟 / The Clocks
+
+### 机械与运动
+
+| 编号 | 时钟 | 玩法 |
 | --- | --- | --- |
-| 01 | 指针矩阵 | 默认时分秒、360 个表盘；支持秒数开关、三秒归位与六种手动编舞。 |
-| 02 | 整位滑轨 | 整位共享固定遮罩与位置；支持 Focus。 |
-| 03 | 原作双轨 | Hans Andersson 的原始遮罩与位置表；支持 Focus。 |
-| 04 | 字母滑轨 | 53 种字符、六字符输入与轮播；支持 Focus。 |
-| 05 | 数字矩阵 | 保留原版 Matrix Clock Ultra 的主题、小时括号、秒数下划线和字体。 |
-| 06 | 中文文字时钟 | 原版中文荧光文字矩阵、精度、读秒与主题。 |
-| 07 | 英文文字时钟 | 独立的英文荧光文字矩阵、精度、读秒与主题。 |
-| 08 | 机器人写字 | 双连杆逆运动学、擦除与逐笔书写，支持换墨和重写。 |
-| 09 | 磁流体时钟 | 粒子势场聚合为数字，触摸扰动；可选秒数与液体颜色。 |
+| 01 | 指针矩阵 | 360 个小表盘（关秒数后 240 个），相邻指针沿数字内外两侧连接，拼出双线轮廓；六种手动编舞（星旋、波浪、涟漪、风车、棋盘、扇面），三秒归位。 |
+| 02 | 整位滑轨 | 每一位数字共用一张连续固定遮罩，整张栅格沿轨道平移找下一位数字；支持 Focus。 |
+| 03 | 原作双轨 | Hans Andersson 原作遮罩与位置表，单列 + 双列轨道独立移动组合数字；支持 Focus。 |
+| 04 | 字母滑轨 | 53 种字符、六字符输入与轮播，时间也可以是一句话；支持 Focus。 |
+
+### 数字与文字
+
+| 编号 | 时钟 | 玩法 |
+| --- | --- | --- |
+| 05 | 数字矩阵 | 原版 Matrix Clock Ultra：琥珀荧光、00–59 数字网格、小时括号、秒数下划线。 |
+| 06 | 中文文字时钟 | 原版中文荧光文字矩阵，分钟精度、文字读秒与主题。 |
+| 07 | 英文文字时钟 | 独立的英文荧光文字矩阵，分钟精度、英文读秒与主题。 |
+
+### 物质与光学
+
+| 编号 | 时钟 | 玩法 |
+| --- | --- | --- |
+| 08 | 机器人写字 | 双连杆机械臂逐笔书写，换分时先擦除再重写，支持换墨和重写。 |
+| 09 | 磁流体时钟 | 粒子势场聚合为数字，触摸扰动后慢慢重新聚合；可选秒数与液体颜色。 |
 | 10 | 莫尔纹时钟 | 两层光栅错位显影，拖动与反相，支持独立秒针。 |
 | 11 | 数字沙漏 | 沙粒落入数字字模，换分坍塌重组，支持秒数、颜色与重力。 |
 
-数字矩阵及文字时钟的原始 CSS 保持一致，记录在 [restored-styles.json](docs/restored-styles.json)，测试检查其 SHA-256。仅做统一时间源、嵌入窗口适配及原有变量冲突的修复。此前移除的旧案例不再收录；08–11 为本次新增的物质与光学系列。
+## 通用操作 / Common Controls
 
-点选时钟进入全视窗沉浸展示，背景随主题同步。所有选项统一从右上角设置进入，手机使用底部面板。统一提供实时、演示、速度、起始时间、暂停、重播与全屏；默认演示每 3 秒前进 1 分钟。指针矩阵默认显示秒数，手机竖屏按两位一组排列；「三秒归位」以纯图标显示，从整齐排列过渡到三秒后的当前时间。旁边的「舞蹈」按钮依次播放星旋、波浪、涟漪、风车、棋盘、扇面，播放结束后自动恢复走时。正常走时没有自动轮转，未变化的指针保持不动。滑轨的 Focus 让读数占据视窗宽度的 50%，允许长轨道超出画面。集合页直接显示实时读数，固定遮罩预先计算，绘制就绪即解除加载遮罩。
+- 所有选项统一从右上角设置进入，手机用底部面板。
+- 统一提供实时、演示、速度、起始时间、暂停、重播与全屏；默认演示每 3 秒前进 1 分钟。
+- 滑轨的 Focus 让读数占据视窗宽度的 50%，长轨道可超出画面。
+- 每次只加载一款时钟，回到目录即销毁实例；指针矩阵静止时停止绘制，后台暂停。
 
-## 开发
+## 本地运行 / Run Locally
 
-```sh
+原生 HTML、CSS、JavaScript，无生产运行时依赖：
+
+```bash
 npm ci
 npm run dev       # http://localhost:4179
 npm run check     # 字形、原版 CSS、几何、时间源与 DOM 执行校验
 npm run build     # 仅 public/ 进入 dist/
-npm run deploy    # 发布到已有 Cloudflare Worker
 ```
 
-原生 HTML、CSS、JavaScript，无生产运行时依赖。每次只加载一款时钟，回到目录即销毁实例。指针矩阵静止时停止绘制，后台暂停，画布像素比最高为 2。
+开发预览支持 `views/kinetic.html?preview&at=09:41:27`；加 `&profile` 可显示帧率与开销。
 
-GitHub Pages 在 main 推送后检查并部署 dist/；Cloudflare 从同一提交手动发布。目录缩略图来自实际网页截图。开发预览支持 `views/kinetic.html?preview&at=09:41:27`；加 `&profile` 可显示帧率与开销。
+## 技术 / Tech
 
-## 合并与来源
+- 原生 HTML + CSS + JavaScript，零框架、零生产依赖；统一时间源，每款时钟独立 `views/*.html`。
+- 数字矩阵及文字时钟的原始 CSS 保持一致，记录在 `docs/restored-styles.json`，测试检查其 SHA-256。
+- 滑轨实现合并自 [time-slider-clock](https://github.com/holynova/time-slider-clock)，导入版本与 SHA-256 见 `docs/imports.json`。
+- 原作双轨几何归属 Hans Andersson，沿用 CC BY-NC-SA 4.0，见 `public/views/ATTRIBUTION.txt`；实验系列灵感来源见 `docs/experiments.md`。
 
-滑轨实现合并自 [time-slider-clock](https://github.com/holynova/time-slider-clock)，导入版本与 SHA-256 见 [imports.json](docs/imports.json)。旧滑轨线上地址分别跳转到本集合的对应版本，原仓库保留历史。
+```
+public/
+├── index.html          集合页（目录、分类、实时读数）
+├── views/              11 款时钟的独立页面
+├── assets/             catalog.js（目录数据）/ app.js / 各时钟实现
+└── previews/           目录缩略图（实际网页截图）
+tests/                  Node 测试（字形 / 几何 / 时间源）
+docs/                   audit.md（逐款检查）/ performance.md / experiments.md
+```
 
-原作双轨几何归属 Hans Andersson，沿用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)，见 [ATTRIBUTION.txt](public/views/ATTRIBUTION.txt)。原版数字矩阵与文字时钟来自本仓库提交 67ba456。
+## English
 
-分列滑轨已移出目录，旧 `?clock=slider-column` 自动进入整位滑轨。原 `?clock=word` 进入中文案例；`word-zh` 与 `word-en` 为独立案例。旧的 word-clock.html、time-slider.html、time-slider-original.html 仍跳转到对应项目。移除的运动表旧入口返回目录。
+**100 Clocks** is a time laboratory — 11 interactive web clocks today, 100 as the goal. The kinetic matrix spells the time with 360 dials (240 without seconds); rails slide whole digits into place; word clocks read the time in Chinese or English; and four experimental clocks — plotter, ferrofluid, moiré, sand — give time material and optical form.
 
-本次版本检查及手机 / Focus 截图见 [v2.3.0](docs/v2.3.0/README.md)。
-
-六种手动编舞及安静走时检查见 [编舞验证](docs/dances/README.md)。
-
-新增四款的设计边界、来源及验证记录见 [物质与光学系列](docs/experiments.md)。
+- **Browse**: filter by Mechanical, Digital, or Experimental; click any clock for a fullscreen immersive view. Every clock offers live/demo modes, speed, start time, pause, replay, and fullscreen; demo mode advances 1 minute every 3 seconds.
+- **Run it**: `npm ci && npm run dev` (http://localhost:4179). Check: `npm run check`.
+- **Tech**: vanilla HTML + CSS + JavaScript, zero production dependencies. One shared time source; each clock is a standalone page under `public/views/`. The dual-rail geometry is Hans Andersson's, under CC BY-NC-SA 4.0.
